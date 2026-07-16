@@ -32,11 +32,12 @@ fun StepperDial(
     onSelect: (StopValue) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    valuePrefix: String = "",
 ) {
     val index = values.indexOfFirst { it.nominal == selected.nominal }.coerceAtLeast(0)
     StepperColumn(
         label = label,
-        valueText = selected.nominal,
+        valueText = valuePrefix + selected.nominal,
         onStepUp = { if (index < values.lastIndex) onSelect(values[index + 1]) },
         onStepDown = { if (index > 0) onSelect(values[index - 1]) },
         canStepUp = enabled && index < values.lastIndex,
@@ -87,7 +88,7 @@ private fun StepperColumn(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.width(76.dp),
+        modifier = modifier.width(88.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(0.dp),
     ) {
@@ -95,6 +96,7 @@ private fun StepperColumn(
             label,
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
         )
         StepButton(Icons.Filled.KeyboardArrowUp, enabled = canStepUp, onClick = onStepUp)
         Text(

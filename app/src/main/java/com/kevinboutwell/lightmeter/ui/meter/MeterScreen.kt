@@ -9,13 +9,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Settings
@@ -84,8 +81,7 @@ fun MeterScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState()),
+                .padding(padding),
         ) {
             Row(
                 modifier = Modifier
@@ -124,14 +120,15 @@ fun MeterScreen(
                     permissionRequested = permissionRequested,
                     onRequestPermission = { permissionLauncher.launch(Manifest.permission.CAMERA) },
                     viewModel = viewModel,
+                    modifier = Modifier.weight(1f),
                 )
-                MeterMode.INCIDENT -> IncidentPanel(state)
+                MeterMode.INCIDENT -> IncidentPanel(state, modifier = Modifier.weight(1f))
             }
 
             EvReadout(state)
             SolutionPanel(state)
 
-            DialsRow(modifier = Modifier.padding(top = 8.dp)) {
+            DialsRow(modifier = Modifier.padding(top = 4.dp)) {
                 StepperDial(
                     label = "ISO",
                     values = Stops.ISOS,
@@ -140,10 +137,11 @@ fun MeterScreen(
                 )
                 if (state.priority == Priority.APERTURE) {
                     StepperDial(
-                        label = "APERTURE  f/",
+                        label = "APERTURE",
                         values = Stops.APERTURES,
                         selected = state.aperture,
                         onSelect = viewModel::setAperture,
+                        valuePrefix = "f/",
                     )
                 } else {
                     StepperDial(
@@ -159,7 +157,7 @@ fun MeterScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -189,7 +187,7 @@ fun MeterScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                    .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 OutlinedButton(
@@ -284,81 +282,85 @@ private fun ReflectivePanel(
     permissionRequested: Boolean,
     onRequestPermission: () -> Unit,
     viewModel: MeterViewModel,
+    modifier: Modifier = Modifier,
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(4f / 3f),
-    ) {
-        when {
-            !hasPermission -> Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    if (permissionRequested) {
-                        "Camera permission denied. Grant it in system settings, or use incident mode."
-                    } else {
-                        "Reflective metering uses the camera to read the light in the scene."
-                    },
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-                Spacer(Modifier.height(16.dp))
-                Button(onClick = onRequestPermission) { Text("Allow camera") }
-            }
-            state.cameraUnsupportedReason != null -> Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    state.cameraUnsupportedReason,
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-            }
-            else -> ReflectiveViewfinder(
-                spotEnabled = state.spot && state.supportsSpot,
-                onBind = viewModel::bindCamera,
-                onMeterAt = viewModel::meterAt,
-                modifier = Modifier.fillMaxSize(),
-            )
-        }
-    }
-    if (hasPermission && state.cameraUnsupportedReason == null) {
-        Row(
+    Column(modifier = modifier.fillMaxWidth()) {
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                .weight(1f),
         ) {
-            FilterChip(
-                selected = state.spot,
-                onClick = { viewModel.setSpot(true) },
-                label = { Text("Spot (tap to meter)") },
-                enabled = state.supportsSpot,
-            )
-            FilterChip(
-                selected = !state.spot,
-                onClick = { viewModel.setSpot(false) },
-                label = { Text("Average") },
-            )
+            when {
+                !hasPermission -> Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        if (permissionRequested) {
+                            "Camera permission denied. Grant it in system settings, or use incident mode."
+                        } else {
+                            "Reflective metering uses the camera to read the light in the scene."
+                        },
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    Button(onClick = onRequestPermission) { Text("Allow camera") }
+                }
+                state.cameraUnsupportedReason != null -> Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        state.cameraUnsupportedReason,
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                }
+                else -> ReflectiveViewfinder(
+                    spotEnabled = state.spot && state.supportsSpot,
+                    onBind = viewModel::bindCamera,
+                    onMeterAt = viewModel::meterAt,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
+        }
+        if (hasPermission && state.cameraUnsupportedReason == null) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                FilterChip(
+                    selected = state.spot,
+                    onClick = { viewModel.setSpot(true) },
+                    label = { Text("Spot (tap to meter)") },
+                    enabled = state.supportsSpot,
+                )
+                FilterChip(
+                    selected = !state.spot,
+                    onClick = { viewModel.setSpot(false) },
+                    label = { Text("Average") },
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun IncidentPanel(state: MeterUiState) {
+private fun IncidentPanel(state: MeterUiState, modifier: Modifier = Modifier) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(24.dp),
+        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         if (!state.hasLightSensor) {
@@ -393,7 +395,7 @@ private fun EvReadout(state: MeterUiState) {
     ) {
         Text(
             state.ev100?.let { String.format(Locale.US, "EV %.1f", it) } ?: "EV —",
-            style = MaterialTheme.typography.displayMedium,
+            style = MaterialTheme.typography.headlineMedium,
             color = if (state.isHeld) MaterialTheme.colorScheme.primary
             else MaterialTheme.colorScheme.onSurface,
         )
@@ -428,7 +430,7 @@ private fun SolutionPanel(state: MeterUiState) {
             state.priority == Priority.APERTURE -> solution.shutter.nominal
             else -> "f/${solution.aperture.nominal}"
         }
-        Text(big, style = MaterialTheme.typography.displayLarge)
+        Text(big, style = MaterialTheme.typography.displayMedium)
         Text(
             solution?.let {
                 "f/${it.aperture.nominal}  ·  ${it.shutter.nominal}  ·  ISO ${state.iso.nominal}"
