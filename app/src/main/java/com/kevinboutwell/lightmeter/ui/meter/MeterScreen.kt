@@ -436,21 +436,24 @@ private fun SolutionPanel(state: MeterUiState) {
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        if (solution?.outOfRange == true) {
-            Text(
-                "beyond the standard range — clamped",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.error,
-            )
-        }
-        if (solution?.correctedSeconds != null) {
-            Text(
-                "${state.film.name} reciprocity: " +
-                    "${Stops.formatSeconds(solution.meteredSeconds)} → " +
-                    Stops.formatSeconds(solution.correctedSeconds!!),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary,
-            )
+        if (solution != null) {
+            if (solution.outOfRange) {
+                Text(
+                    "beyond the standard range — clamped",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+            val corrected = solution.correctedSeconds
+            if (corrected != null) {
+                Text(
+                    "${state.film.name} reciprocity: " +
+                        "${Stops.formatSeconds(solution.meteredSeconds)} → " +
+                        Stops.formatSeconds(corrected),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
         }
     }
 }
