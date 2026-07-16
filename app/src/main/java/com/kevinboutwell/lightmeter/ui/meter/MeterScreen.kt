@@ -4,34 +4,43 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -40,20 +49,32 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kevinboutwell.lightmeter.core.FilmStocks
 import com.kevinboutwell.lightmeter.core.Priority
 import com.kevinboutwell.lightmeter.core.Stops
 import java.util.Locale
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun MeterScreen(
     onOpenLog: () -> Unit,
@@ -62,6 +83,9 @@ fun MeterScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val haptics = LocalHapticFeedback.current
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     var hasCameraPermission by remember {
         mutableStateOf(
@@ -80,133 +104,67 @@ fun MeterScreen(
     var showFilmSheet by remember { mutableStateOf(false) }
     var showSaveDialog by remember { mutableStateOf(false) }
 
-    Scaffold { padding ->
+    Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState()),
+                .padding(padding),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text("Light Meter", style = MaterialTheme.typography.titleMedium)
-                Spacer(Modifier.weight(1f))
-                IconButton(onClick = onOpenLog) {
-                    Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Reading log")
-                }
-                IconButton(onClick = onOpenSettings) {
-                    Icon(Icons.Filled.Settings, contentDescription = "Settings")
-                }
-            }
-
-            TabRow(selectedTabIndex = if (state.mode == MeterMode.REFLECTIVE) 0 else 1) {
-                Tab(
-                    selected = state.mode == MeterMode.REFLECTIVE,
-                    onClick = { viewModel.setMode(MeterMode.REFLECTIVE) },
-                    text = { Text("Reflective") },
-                )
-                Tab(
-                    selected = state.mode == MeterMode.INCIDENT,
-                    onClick = { viewModel.setMode(MeterMode.INCIDENT) },
-                    text = { Text("Incident") },
-                    enabled = state.hasLightSensor,
-                )
-            }
-
-            when (state.mode) {
-                MeterMode.REFLECTIVE -> ReflectivePanel(
-                    state = state,
-                    hasPermission = hasCameraPermission,
-                    permissionRequested = permissionRequested,
-                    onRequestPermission = { permissionLauncher.launch(Manifest.permission.CAMERA) },
-                    viewModel = viewModel,
-                )
-                MeterMode.INCIDENT -> IncidentPanel(state)
-            }
-
-            EvReadout(state)
-            SolutionPanel(state)
-
-            DialsRow(modifier = Modifier.padding(top = 8.dp)) {
-                StepperDial(
-                    label = "ISO",
-                    values = Stops.ISOS,
-                    selected = state.iso,
-                    onSelect = viewModel::setIso,
-                )
-                if (state.priority == Priority.APERTURE) {
-                    StepperDial(
-                        label = "APERTURE  f/",
-                        values = Stops.APERTURES,
-                        selected = state.aperture,
-                        onSelect = viewModel::setAperture,
+            Spacer(Modifier.height(8.dp))
+            EvStatusChip(state)
+            StatusLine(state)
+            SolutionBlock(state)
+            Spacer(Modifier.height(8.dp))
+            ViewfinderCard(
+                state = state,
+                hasPermission = hasCameraPermission,
+                permissionRequested = permissionRequested,
+                onRequestPermission = { permissionLauncher.launch(Manifest.permission.CAMERA) },
+                onToggleMode = {
+                    viewModel.setMode(
+                        if (state.mode == MeterMode.REFLECTIVE) MeterMode.INCIDENT
+                        else MeterMode.REFLECTIVE,
                     )
-                } else {
-                    StepperDial(
-                        label = "SHUTTER",
-                        values = Stops.SHUTTERS,
-                        selected = state.shutter,
-                        onSelect = viewModel::setShutter,
-                    )
-                }
-                EcDial(ecThirds = state.ecThirds, onChange = viewModel::setEcThirds)
-            }
-
-            Row(
+                },
+                onLongPressHold = {
+                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                    viewModel.toggleHold()
+                },
+                viewModel = viewModel,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+            )
+            Spacer(Modifier.height(12.dp))
+            ControlDeck(
+                state = state,
+                viewModel = viewModel,
+                onOpenFilmSheet = { showFilmSheet = true },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                FilterChip(
-                    selected = state.priority == Priority.APERTURE,
-                    onClick = { viewModel.setPriority(Priority.APERTURE) },
-                    label = { Text("A priority") },
-                )
-                FilterChip(
-                    selected = state.priority == Priority.SHUTTER,
-                    onClick = { viewModel.setPriority(Priority.SHUTTER) },
-                    label = { Text("S priority") },
-                )
-                Spacer(Modifier.weight(1f))
-                FilterChip(
-                    selected = state.film.id != FilmStocks.NONE.id,
-                    onClick = { showFilmSheet = true },
-                    label = {
-                        Text(
-                            if (state.film.id == FilmStocks.NONE.id) "Film…"
-                            else state.film.name,
-                        )
-                    },
-                )
-            }
-
-            Row(
+                    .padding(horizontal = 16.dp),
+            )
+            Spacer(Modifier.height(12.dp))
+            ActionRow(
+                state = state,
+                onOpenLog = onOpenLog,
+                onOpenSettings = onOpenSettings,
+                onToggleHold = viewModel::toggleHold,
+                onSave = {
+                    viewModel.saveReading(null)
+                    scope.launch { snackbarHostState.showSnackbar("Reading saved") }
+                },
+                onSaveWithNote = {
+                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                    showSaveDialog = true
+                },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                OutlinedButton(
-                    onClick = viewModel::toggleHold,
-                    modifier = Modifier.weight(1f),
-                    enabled = state.ev100 != null || state.isHeld,
-                ) {
-                    Text(if (state.isHeld) "Resume" else "Hold")
-                }
-                Button(
-                    onClick = { showSaveDialog = true },
-                    modifier = Modifier.weight(1f),
-                    enabled = state.ev100 != null,
-                ) {
-                    Text("Save")
-                }
-            }
+                    .padding(horizontal = 16.dp),
+            )
+            Spacer(Modifier.height(12.dp))
         }
     }
 
@@ -268,6 +226,7 @@ fun MeterScreen(
                 TextButton(onClick = {
                     viewModel.saveReading(note)
                     showSaveDialog = false
+                    scope.launch { snackbarHostState.showSnackbar("Reading saved") }
                 }) { Text("Save") }
             },
             dismissButton = {
@@ -277,20 +236,146 @@ fun MeterScreen(
     }
 }
 
+// ---- top readout ----
+
 @Composable
-private fun ReflectivePanel(
+private fun EvStatusChip(state: MeterUiState) {
+    val evText = state.ev100?.let { String.format(Locale.US, "EV %.1f", it) } ?: "EV —"
+    val suffix = when {
+        state.isHeld -> "held"
+        state.ev100 != null -> "live"
+        else -> "waiting"
+    }
+    val textColor = if (state.isHeld) MaterialTheme.colorScheme.primary
+    else MaterialTheme.colorScheme.onSurfaceVariant
+    Surface(
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        modifier = Modifier.height(28.dp),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            if (state.ev100 != null) {
+                Box(
+                    Modifier
+                        .size(6.dp)
+                        .background(MaterialTheme.colorScheme.primary, CircleShape),
+                )
+            }
+            Text(
+                "$evText · $suffix",
+                style = MaterialTheme.typography.labelLarge.copy(fontFeatureSettings = "tnum"),
+                color = textColor,
+            )
+        }
+    }
+}
+
+/** Fixed-height slot so status text appearing never shifts the layout. */
+@Composable
+private fun StatusLine(state: MeterUiState) {
+    val (text, color) = when {
+        state.solution?.outOfRange == true ->
+            "beyond the standard range — clamped" to MaterialTheme.colorScheme.error
+        state.isSettling && state.mode == MeterMode.REFLECTIVE ->
+            "settling…" to MaterialTheme.colorScheme.onSurfaceVariant
+        state.notConverged ->
+            "unsteady light — reading may be off" to MaterialTheme.colorScheme.onSurfaceVariant
+        state.apertureIsFallback ->
+            "lens aperture unreported — calibrate for accuracy" to
+                MaterialTheme.colorScheme.onSurfaceVariant
+        else -> null to Color.Unspecified
+    }
+    Box(Modifier.height(20.dp), contentAlignment = Alignment.Center) {
+        if (text != null) {
+            Text(text, style = MaterialTheme.typography.labelMedium, color = color)
+        }
+    }
+}
+
+@Composable
+private fun SolutionBlock(state: MeterUiState) {
+    val solution = state.solution
+    val glowColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.13f)
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxWidth()
+            .drawBehind {
+                // Decorative amber glow behind the answer, ~260x120dp ellipse.
+                val glowWidth = 260.dp.toPx()
+                scale(scaleX = 1f, scaleY = 120.dp.toPx() / glowWidth) {
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            colors = listOf(glowColor, Color.Transparent),
+                            center = center,
+                            radius = glowWidth / 2,
+                        ),
+                        radius = glowWidth / 2,
+                        center = center,
+                    )
+                }
+            },
+    ) {
+        val big = when {
+            solution == null -> "—"
+            state.priority == Priority.APERTURE -> solution.shutter.nominal
+            else -> "f/${solution.aperture.nominal}"
+        }
+        Text(
+            big,
+            style = MaterialTheme.typography.displayLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            softWrap = false,
+        )
+        Text(
+            if (state.priority == Priority.APERTURE) "SHUTTER · A PRIORITY"
+            else "APERTURE · S PRIORITY",
+            style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 2.sp),
+            color = MaterialTheme.colorScheme.primary,
+        )
+        val corrected = solution?.correctedSeconds
+        if (solution != null && corrected != null) {
+            Text(
+                "${state.film.name} reciprocity: " +
+                    "${Stops.formatSeconds(solution.meteredSeconds)} → " +
+                    Stops.formatSeconds(corrected),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
+    }
+}
+
+// ---- viewfinder card ----
+
+@Composable
+private fun ViewfinderCard(
     state: MeterUiState,
     hasPermission: Boolean,
     permissionRequested: Boolean,
     onRequestPermission: () -> Unit,
+    onToggleMode: () -> Unit,
+    onLongPressHold: () -> Unit,
     viewModel: MeterViewModel,
+    modifier: Modifier = Modifier,
 ) {
+    val cameraReady = hasPermission && state.cameraUnsupportedReason == null
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(4f / 3f),
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainer),
     ) {
         when {
+            state.mode == MeterMode.INCIDENT -> IncidentGlass(
+                state = state,
+                onLongPressHold = onLongPressHold,
+                modifier = Modifier.fillMaxSize(),
+            )
             !hasPermission -> Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -327,38 +412,72 @@ private fun ReflectivePanel(
                 spotEnabled = state.spot && state.supportsSpot,
                 onBind = viewModel::bindCamera,
                 onMeterAt = viewModel::meterAt,
+                onLongPress = onLongPressHold,
                 modifier = Modifier.fillMaxSize(),
             )
         }
-    }
-    if (hasPermission && state.cameraUnsupportedReason == null) {
-        Row(
+
+        if (state.mode == MeterMode.REFLECTIVE && cameraReady) {
+            Row(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                GlassChip(
+                    text = "Spot",
+                    selected = state.spot,
+                    enabled = state.supportsSpot,
+                    onClick = { viewModel.setSpot(true) },
+                )
+                GlassChip(
+                    text = "Average",
+                    selected = !state.spot,
+                    onClick = { viewModel.setSpot(false) },
+                )
+            }
+        }
+        GlassChip(
+            text = if (state.mode == MeterMode.REFLECTIVE) "Incident" else "Reflective",
+            selected = state.mode == MeterMode.INCIDENT,
+            enabled = state.hasLightSensor,
+            onClick = onToggleMode,
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            FilterChip(
-                selected = state.spot,
-                onClick = { viewModel.setSpot(true) },
-                label = { Text("Spot (tap to meter)") },
-                enabled = state.supportsSpot,
-            )
-            FilterChip(
-                selected = !state.spot,
-                onClick = { viewModel.setSpot(false) },
-                label = { Text("Average") },
+                .align(Alignment.TopEnd)
+                .padding(12.dp),
+        )
+        val hint = when {
+            state.mode == MeterMode.INCIDENT && state.hasLightSensor -> "long-press to hold"
+            state.mode == MeterMode.REFLECTIVE && cameraReady ->
+                "tap to meter · long-press to hold"
+            else -> null
+        }
+        if (hint != null) {
+            Text(
+                hint,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 14.dp),
+                style = MaterialTheme.typography.labelMedium,
+                color = Color.White.copy(alpha = 0.55f),
             )
         }
     }
 }
 
 @Composable
-private fun IncidentPanel(state: MeterUiState) {
+private fun IncidentGlass(
+    state: MeterUiState,
+    onLongPressHold: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = modifier
+            .pointerInput(Unit) {
+                detectTapGestures(onLongPress = { onLongPressHold() })
+            }
             .padding(24.dp),
+        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         if (!state.hasLightSensor) {
@@ -384,76 +503,222 @@ private fun IncidentPanel(state: MeterUiState) {
 }
 
 @Composable
-private fun EvReadout(state: MeterUiState) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+private fun GlassChip(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
+    Box(
+        modifier = modifier
+            .alpha(if (enabled) 1f else 0.38f)
+            .height(28.dp)
+            .clip(CircleShape)
+            .background(
+                if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f)
+                else Color.Black.copy(alpha = 0.5f),
+            )
+            .then(
+                if (selected) Modifier
+                else Modifier.border(1.dp, Color.White.copy(alpha = 0.14f), CircleShape),
+            )
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(horizontal = 14.dp),
+        contentAlignment = Alignment.Center,
     ) {
         Text(
-            state.ev100?.let { String.format(Locale.US, "EV %.1f", it) } ?: "EV —",
-            style = MaterialTheme.typography.displayMedium,
-            color = if (state.isHeld) MaterialTheme.colorScheme.primary
-            else MaterialTheme.colorScheme.onSurface,
+            text,
+            style = MaterialTheme.typography.labelLarge,
+            color = if (selected) MaterialTheme.colorScheme.primary
+            else Color.White.copy(alpha = 0.8f),
         )
-        val status = when {
-            state.isHeld -> "HELD"
-            state.isSettling && state.mode == MeterMode.REFLECTIVE -> "settling…"
-            state.notConverged -> "unsteady light — reading may be off"
-            state.apertureIsFallback -> "lens aperture unreported — calibrate for accuracy"
-            else -> null
-        }
-        if (status != null) {
-            Text(
-                status,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+    }
+}
+
+// ---- control deck ----
+
+@Composable
+private fun ControlDeck(
+    state: MeterUiState,
+    viewModel: MeterViewModel,
+    onOpenFilmSheet: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val isoLabels = remember { Stops.ISOS.map { it.nominal } }
+    val apertureLabels = remember { Stops.APERTURES.map { "f/${it.nominal}" } }
+    val shutterLabels = remember { Stops.SHUTTERS.map { it.nominal } }
+    val ecLabels = remember { (-9..9).map { formatEcThirds(it) } }
+
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        modifier = modifier,
+    ) {
+        Column {
+            DragRuler(
+                label = "ISO",
+                values = isoLabels,
+                selectedIndex = Stops.ISOS
+                    .indexOfFirst { it.nominal == state.iso.nominal }
+                    .coerceAtLeast(0),
+                onSelect = { viewModel.setIso(Stops.ISOS[it]) },
             )
+            DeckDivider()
+            if (state.priority == Priority.APERTURE) {
+                DragRuler(
+                    label = "APERTURE",
+                    values = apertureLabels,
+                    selectedIndex = Stops.APERTURES
+                        .indexOfFirst { it.nominal == state.aperture.nominal }
+                        .coerceAtLeast(0),
+                    onSelect = { viewModel.setAperture(Stops.APERTURES[it]) },
+                )
+            } else {
+                DragRuler(
+                    label = "SHUTTER",
+                    values = shutterLabels,
+                    selectedIndex = Stops.SHUTTERS
+                        .indexOfFirst { it.nominal == state.shutter.nominal }
+                        .coerceAtLeast(0),
+                    onSelect = { viewModel.setShutter(Stops.SHUTTERS[it]) },
+                )
+            }
+            DeckDivider()
+            DragRuler(
+                label = "EC",
+                values = ecLabels,
+                selectedIndex = state.ecThirds + 9,
+                onSelect = { viewModel.setEcThirds(it - 9) },
+                isFullStop = { (it - 9) % 3 == 0 },
+            )
+            DeckDivider()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+            ) {
+                DeckChip(
+                    text = "A priority",
+                    selected = state.priority == Priority.APERTURE,
+                    onClick = { viewModel.setPriority(Priority.APERTURE) },
+                )
+                DeckChip(
+                    text = "S priority",
+                    selected = state.priority == Priority.SHUTTER,
+                    onClick = { viewModel.setPriority(Priority.SHUTTER) },
+                )
+                DeckChip(
+                    text = if (state.film.id == FilmStocks.NONE.id) "Film…" else state.film.name,
+                    selected = state.film.id != FilmStocks.NONE.id,
+                    onClick = onOpenFilmSheet,
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun SolutionPanel(state: MeterUiState) {
-    val solution = state.solution
-    Column(
+private fun DeckDivider() {
+    HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
+}
+
+@Composable
+private fun DeckChip(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    val shape = RoundedCornerShape(8.dp)
+    Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .height(30.dp)
+            .clip(shape)
+            .then(
+                if (selected) Modifier.background(MaterialTheme.colorScheme.primaryContainer)
+                else Modifier.border(1.dp, MaterialTheme.colorScheme.outline, shape),
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp),
+        contentAlignment = Alignment.Center,
     ) {
-        val big = when {
-            solution == null -> "—"
-            state.priority == Priority.APERTURE -> solution.shutter.nominal
-            else -> "f/${solution.aperture.nominal}"
-        }
-        Text(big, style = MaterialTheme.typography.displayLarge)
         Text(
-            solution?.let {
-                "f/${it.aperture.nominal}  ·  ${it.shutter.nominal}  ·  ISO ${state.iso.nominal}"
-            } ?: "waiting for a reading",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            text,
+            style = MaterialTheme.typography.labelLarge,
+            color = if (selected) MaterialTheme.colorScheme.primary
+            else MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        if (solution != null) {
-            if (solution.outOfRange) {
-                Text(
-                    "beyond the standard range — clamped",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.error,
+    }
+}
+
+// ---- action row ----
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@Composable
+private fun ActionRow(
+    state: MeterUiState,
+    onOpenLog: () -> Unit,
+    onOpenSettings: () -> Unit,
+    onToggleHold: () -> Unit,
+    onSave: () -> Unit,
+    onSaveWithNote: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val holdEnabled = state.ev100 != null || state.isHeld
+    val saveEnabled = state.ev100 != null
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        OutlinedIconButton(onClick = onOpenLog, modifier = Modifier.size(52.dp)) {
+            Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Reading log")
+        }
+        OutlinedIconButton(onClick = onOpenSettings, modifier = Modifier.size(52.dp)) {
+            Icon(Icons.Filled.Settings, contentDescription = "Settings")
+        }
+        OutlinedButton(
+            onClick = onToggleHold,
+            modifier = Modifier
+                .weight(1f)
+                .height(52.dp),
+            enabled = holdEnabled,
+            border = BorderStroke(
+                1.dp,
+                if (holdEnabled) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.outline,
+            ),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = MaterialTheme.colorScheme.primary,
+            ),
+        ) {
+            Text(if (state.isHeld) "Resume" else "Hold")
+        }
+        // Custom pill instead of Button: plain tap saves immediately,
+        // long-press opens the save-with-note dialog.
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(52.dp)
+                .clip(CircleShape)
+                .background(
+                    if (saveEnabled) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
                 )
-            }
-            val corrected = solution.correctedSeconds
-            if (corrected != null) {
-                Text(
-                    "${state.film.name} reciprocity: " +
-                        "${Stops.formatSeconds(solution.meteredSeconds)} → " +
-                        Stops.formatSeconds(corrected),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-            }
+                .combinedClickable(
+                    enabled = saveEnabled,
+                    onClick = onSave,
+                    onLongClick = onSaveWithNote,
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                "Save",
+                style = MaterialTheme.typography.labelLarge,
+                color = if (saveEnabled) MaterialTheme.colorScheme.onPrimary
+                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+            )
         }
     }
 }

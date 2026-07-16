@@ -30,6 +30,7 @@ fun ReflectiveViewfinder(
     onBind: (androidx.lifecycle.LifecycleOwner, PreviewView) -> Unit,
     onMeterAt: (androidx.camera.core.MeteringPoint) -> Unit,
     modifier: Modifier = Modifier,
+    onLongPress: () -> Unit = {},
 ) {
     val context = LocalContext.current
     // Inside a NavHost this is the back-stack entry: binding the camera to it
@@ -57,14 +58,17 @@ fun ReflectiveViewfinder(
             modifier = Modifier
                 .fillMaxSize()
                 .pointerInput(spotEnabled) {
-                    if (spotEnabled) {
-                        detectTapGestures { offset ->
-                            reticle = offset
-                            val point = previewView.meteringPointFactory
-                                .createPoint(offset.x, offset.y, SPOT_SIZE)
-                            onMeterAt(point)
-                        }
-                    }
+                    detectTapGestures(
+                        onLongPress = { onLongPress() },
+                        onTap = { offset ->
+                            if (spotEnabled) {
+                                reticle = offset
+                                val point = previewView.meteringPointFactory
+                                    .createPoint(offset.x, offset.y, SPOT_SIZE)
+                                onMeterAt(point)
+                            }
+                        },
+                    )
                 },
         )
         Canvas(modifier = Modifier.fillMaxSize()) {

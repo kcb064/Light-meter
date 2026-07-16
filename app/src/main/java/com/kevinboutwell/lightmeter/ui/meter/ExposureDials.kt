@@ -2,7 +2,6 @@ package com.kevinboutwell.lightmeter.ui.meter
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
@@ -22,7 +21,8 @@ import com.kevinboutwell.lightmeter.core.StopValue
 
 /**
  * A compact stepper dial: label on top, big value, up/down arrows. Steps
- * through a third-stop table by index.
+ * through a third-stop table by index. The meter screen uses [DragRuler]
+ * instead; this remains for the calibration screen's reference dials.
  */
 @Composable
 fun StepperDial(
@@ -41,24 +41,6 @@ fun StepperDial(
         onStepDown = { if (index > 0) onSelect(values[index - 1]) },
         canStepUp = enabled && index < values.lastIndex,
         canStepDown = enabled && index > 0,
-        modifier = modifier,
-    )
-}
-
-/** Stepper over exposure-compensation thirds: -9..+9 shown as "-1⅓" etc. */
-@Composable
-fun EcDial(
-    ecThirds: Int,
-    onChange: (Int) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    StepperColumn(
-        label = "EC",
-        valueText = formatEcThirds(ecThirds),
-        onStepUp = { onChange(ecThirds + 1) },
-        onStepDown = { onChange(ecThirds - 1) },
-        canStepUp = ecThirds < 9,
-        canStepDown = ecThirds > -9,
         modifier = modifier,
     )
 }
@@ -118,19 +100,5 @@ private fun StepButton(icon: ImageVector, enabled: Boolean, onClick: () -> Unit)
             tint = if (enabled) MaterialTheme.colorScheme.primary
             else MaterialTheme.colorScheme.outline,
         )
-    }
-}
-
-@Composable
-fun DialsRow(
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit,
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.Top,
-    ) {
-        content()
     }
 }

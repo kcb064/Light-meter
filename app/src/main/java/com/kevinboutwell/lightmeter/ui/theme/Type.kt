@@ -13,7 +13,8 @@ val LightMeterTypography = Typography(
     displayLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Light,
-        fontSize = 72.sp,
+        fontSize = 96.sp,
+        letterSpacing = (-2).sp,
         fontFeatureSettings = TABULAR,
     ),
     displayMedium = TextStyle(
