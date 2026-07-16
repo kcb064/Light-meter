@@ -1,0 +1,60 @@
+<!-- @dsCard group="Foundations" name="Typography" subtitle="Roboto · tabular figures on all numerics" width="760" height="760" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Light Meter · Typography</title>
+<style>
+:root{
+--bg:#0E0E10;--surface-1:#17171A;--surface-2:#202024;
+--amber:#FFB74D;--text:#EDEAE4;--text-dim:#9C988F;--outline-variant:#2A2A2E;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:Roboto,"Helvetica Neue",Arial,system-ui,sans-serif;font-variant-numeric:tabular-nums;padding:28px;-webkit-font-smoothing:antialiased}
+.ds-h{font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin:0 0 14px}
+.row{display:flex;align-items:baseline;gap:20px;padding:14px 0;border-bottom:1px solid var(--outline-variant)}
+.row:last-of-type{border-bottom:none}
+.spec{width:200px;flex:none}
+.spec b{display:block;font-size:13px;font-weight:500}
+.spec code{font-size:11px;color:var(--text-dim);font-family:ui-monospace,Menlo,Consolas,monospace}
+.spec small{display:block;font-size:11px;color:var(--text-dim);margin-top:2px}
+.sample{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.note{font-size:13px;color:var(--text-dim);line-height:1.5;max-width:62ch;margin-top:20px}
+.note b{color:var(--text);font-weight:500}
+</style>
+</head>
+<body>
+
+<h1 class="ds-h">Type scale</h1>
+
+<div class="row"><div class="spec"><b>Display Large</b><code>72 / Light / tnum</code><small>Hero readout</small></div>
+  <div class="sample" style="font-size:72px;font-weight:300;line-height:1.05">1/125</div></div>
+
+<div class="row"><div class="spec"><b>Display Medium</b><code>48 / Light / tnum</code><small>Solution value</small></div>
+  <div class="sample" style="font-size:48px;font-weight:300;line-height:1.1">f/5.6</div></div>
+
+<div class="row"><div class="spec"><b>Display Small</b><code>34 / Regular / tnum</code><small>Lux readout</small></div>
+  <div class="sample" style="font-size:34px;line-height:1.15">12,800 lux</div></div>
+
+<div class="row"><div class="spec"><b>Headline Medium</b><code>24 / Medium / tnum</code><small>EV readout, dial values</small></div>
+  <div class="sample" style="font-size:24px;font-weight:500">EV 11.3</div></div>
+
+<div class="row"><div class="spec"><b>Title Medium</b><code>16 / Medium / +0.15</code><small>App bar, list titles</small></div>
+  <div class="sample" style="font-size:16px;font-weight:500;letter-spacing:.15px">Light Meter</div></div>
+
+<div class="row"><div class="spec"><b>Body Large</b><code>16 / Regular</code><small>Prose, list items</small></div>
+  <div class="sample" style="font-size:16px">Point the sensor toward the camera.</div></div>
+
+<div class="row"><div class="spec"><b>Body Medium</b><code>14 / Regular</code><small>Secondary copy</small></div>
+  <div class="sample" style="font-size:14px;color:var(--text-dim)">f/5.6&nbsp; ·&nbsp; 1/125&nbsp; ·&nbsp; ISO 400</div></div>
+
+<div class="row"><div class="spec"><b>Label Large</b><code>14 / Medium / +0.5</code><small>Buttons</small></div>
+  <div class="sample" style="font-size:14px;font-weight:500;letter-spacing:.5px">SAVE</div></div>
+
+<div class="row"><div class="spec"><b>Label Medium</b><code>12 / Medium / +0.5 / tnum</code><small>Dial labels, status</small></div>
+  <div class="sample" style="font-size:12px;font-weight:500;letter-spacing:.5px;color:var(--text-dim)">APERTURE&nbsp;&nbsp;·&nbsp;&nbsp;HELD&nbsp;&nbsp;·&nbsp;&nbsp;settling…</div></div>
+
+<p class="note"><b>Tabular figures everywhere numbers appear</b> (<code>font-feature-settings: "tnum"</code> / <code>font-variant-numeric: tabular-nums</code>) so live readouts don't jitter horizontally as values change. Display weights go <b>lighter as sizes grow</b> — big values read as instrument markings, not shouting. Exposure summaries join values with a spaced middle dot:&nbsp; <span style="color:var(--text)">f/5.6&nbsp;·&nbsp;1/125&nbsp;·&nbsp;ISO 400</span>.</p>
+
+</body>
+</html>

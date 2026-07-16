@@ -1,0 +1,80 @@
+<!-- @dsCard group="Components" name="Overlays" subtitle="Dialog · bottom sheet · snackbar" width="760" height="620" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Light Meter · Overlays</title>
+<style>
+:root{
+--bg:#0E0E10;--surface-1:#17171A;--surface-2:#202024;
+--amber:#FFB74D;--on-amber:#201400;--text:#EDEAE4;--text-dim:#9C988F;--outline:#3A3A40;--outline-variant:#2A2A2E;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:Roboto,"Helvetica Neue",Arial,system-ui,sans-serif;font-variant-numeric:tabular-nums;padding:28px;-webkit-font-smoothing:antialiased}
+.ds-h{font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin:0 0 14px}
+.cols{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start}
+.dialog{width:300px;background:var(--surface-2);border-radius:28px;padding:24px}
+.dialog h2{font:400 24px/1.3 Roboto,system-ui,sans-serif;margin-bottom:16px}
+.field{position:relative;margin-bottom:20px}
+.field input{width:100%;height:56px;background:transparent;border:1px solid var(--outline);border-radius:8px;color:var(--text);font:400 16px Roboto,system-ui,sans-serif;padding:0 16px;outline:none}
+.field label{position:absolute;top:-8px;left:12px;background:var(--surface-2);padding:0 4px;font-size:12px;color:var(--text-dim)}
+.actions{display:flex;justify-content:flex-end;gap:8px}
+.btn-text{background:transparent;border:none;color:var(--amber);font:500 14px/1 Roboto,system-ui,sans-serif;letter-spacing:.5px;height:40px;padding:0 12px;border-radius:999px;cursor:pointer}
+.btn-text:hover{background:rgba(255,183,77,.08)}
+.sheet{width:300px;background:var(--surface-2);border-radius:28px 28px 0 0;padding:8px 0 16px}
+.sheet .handle{width:32px;height:4px;border-radius:2px;background:var(--outline);margin:8px auto 12px}
+.sheet .srow{padding:10px 24px;cursor:pointer}
+.sheet .srow:hover{background:rgba(237,234,228,.05)}
+.sheet .srow b{display:block;font:400 16px/1.5 Roboto,system-ui,sans-serif;font-weight:400}
+.sheet .srow.selected b{color:var(--amber)}
+.sheet .srow small{font:400 14px/1.4 Roboto,system-ui,sans-serif;color:var(--text-dim)}
+.snackbar{width:300px;background:#2E2E33;border-radius:8px;padding:14px 8px 14px 16px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.5)}
+.snackbar span{flex:1;font:400 14px/1.4 Roboto,system-ui,sans-serif}
+.cap{font-size:12px;color:var(--text-dim);margin-top:10px;line-height:1.5;max-width:36ch}
+.col{display:flex;flex-direction:column}
+</style>
+</head>
+<body>
+
+<div class="cols">
+
+  <div class="col">
+    <h1 class="ds-h">Dialog — save reading</h1>
+    <div class="dialog">
+      <h2>Save reading</h2>
+      <div class="field">
+        <label>Note (optional)</label>
+        <input placeholder="">
+      </div>
+      <div class="actions">
+        <button class="btn-text">Cancel</button>
+        <button class="btn-text">Save</button>
+      </div>
+    </div>
+    <p class="cap">Surface-2 at 28dp radius; text-button actions right-aligned, confirming action last.</p>
+  </div>
+
+  <div class="col">
+    <h1 class="ds-h">Bottom sheet — film stocks</h1>
+    <div class="sheet">
+      <div class="handle"></div>
+      <div class="srow"><b>None</b></div>
+      <div class="srow selected"><b>Kodak Tri-X 400</b><small>classic Schwarzschild correction</small></div>
+      <div class="srow"><b>Ilford HP5 Plus</b><small>mild reciprocity failure</small></div>
+    </div>
+    <p class="cap">Skips the half-expanded state — opens full. Selection closes the sheet immediately.</p>
+  </div>
+
+  <div class="col">
+    <h1 class="ds-h">Snackbar — undoable delete</h1>
+    <div class="snackbar">
+      <span>Reading deleted</span>
+      <button class="btn-text">Undo</button>
+    </div>
+    <p class="cap">Every destructive action in the log offers Undo instead of a confirmation dialog.</p>
+  </div>
+
+</div>
+
+</body>
+</html>

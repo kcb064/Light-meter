@@ -1,0 +1,60 @@
+<!-- @dsCard group="Components" name="Stepper Dials" subtitle="ISO / Aperture / Shutter / EC · 88dp columns" width="720" height="440" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Light Meter · Stepper Dials</title>
+<style>
+:root{
+--bg:#0E0E10;--surface-1:#17171A;
+--amber:#FFB74D;--text:#EDEAE4;--text-dim:#9C988F;--outline:#3A3A40;--outline-variant:#2A2A2E;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:Roboto,"Helvetica Neue",Arial,system-ui,sans-serif;font-variant-numeric:tabular-nums;padding:28px;-webkit-font-smoothing:antialiased}
+.ds-h{font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin:0 0 14px}
+.dials-row{display:flex;justify-content:space-evenly;align-items:flex-start;border:1px dashed var(--outline-variant);border-radius:12px;padding:8px 0;max-width:560px}
+.dial{width:88px;display:flex;flex-direction:column;align-items:center}
+.dial .label{font:500 12px/1.3 Roboto,system-ui,sans-serif;letter-spacing:.5px;color:var(--text-dim)}
+.dial .value{font:500 24px/1.25 Roboto,system-ui,sans-serif;text-align:center;width:100%;white-space:nowrap}
+.step{width:48px;height:40px;border:none;background:transparent;color:var(--amber);cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:999px}
+.step:hover{background:rgba(255,183,77,.08)}
+.step[disabled]{color:var(--outline);cursor:default}
+.step svg{width:24px;height:24px;fill:currentColor}
+.cap{font-size:12px;color:var(--text-dim);margin-top:14px;line-height:1.6;max-width:60ch}
+.cap b{color:var(--text);font-weight:500}
+</style>
+</head>
+<body>
+
+<h1 class="ds-h">Dials row — the exposure triangle plus compensation</h1>
+
+<div class="dials-row">
+  <div class="dial">
+    <span class="label">ISO</span>
+    <button class="step"><svg viewBox="0 0 24 24"><path d="M7.41 15.41 12 10.83l4.59 4.58L18 14l-6-6-6 6z"/></svg></button>
+    <span class="value">400</span>
+    <button class="step"><svg viewBox="0 0 24 24"><path d="m7.41 8.59 4.59 4.58 4.59-4.58L18 10l-6 6-6-6z"/></svg></button>
+  </div>
+  <div class="dial">
+    <span class="label">APERTURE</span>
+    <button class="step"><svg viewBox="0 0 24 24"><path d="M7.41 15.41 12 10.83l4.59 4.58L18 14l-6-6-6 6z"/></svg></button>
+    <span class="value">f/5.6</span>
+    <button class="step"><svg viewBox="0 0 24 24"><path d="m7.41 8.59 4.59 4.58 4.59-4.58L18 10l-6 6-6-6z"/></svg></button>
+  </div>
+  <div class="dial">
+    <span class="label">EC</span>
+    <button class="step"><svg viewBox="0 0 24 24"><path d="M7.41 15.41 12 10.83l4.59 4.58L18 14l-6-6-6 6z"/></svg></button>
+    <span class="value">+⅔</span>
+    <button class="step" disabled><svg viewBox="0 0 24 24"><path d="m7.41 8.59 4.59 4.58 4.59-4.58L18 10l-6 6-6-6z"/></svg></button>
+  </div>
+</div>
+
+<p class="cap">
+<b>Anatomy:</b> uppercase 12sp label → up arrow → 24sp medium value → down arrow, in an 88dp column. Steps walk a <b>third-stop table by index</b> — never free-form input.
+<b>Swap, don't add:</b> in aperture priority the row shows ISO · APERTURE · EC; in shutter priority the middle dial becomes SHUTTER. The solved variable is displayed in the readout, not dialed.
+<b>Range ends:</b> the arrow dims to outline gray when the stop table runs out (here EC at its limit).
+EC renders thirds as fraction glyphs: −1⅓, +⅔, 0 — with a true minus sign (−), not a hyphen.
+</p>
+
+</body>
+</html>

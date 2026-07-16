@@ -1,0 +1,77 @@
+<!-- @dsCard group="Components" name="Lists" subtitle="Reading log rows · film picker rows · empty state" width="720" height="640" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Light Meter · Lists</title>
+<style>
+:root{
+--bg:#0E0E10;--surface-1:#17171A;
+--amber:#FFB74D;--text:#EDEAE4;--text-dim:#9C988F;--outline-variant:#2A2A2E;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:Roboto,"Helvetica Neue",Arial,system-ui,sans-serif;font-variant-numeric:tabular-nums;padding:28px;-webkit-font-smoothing:antialiased}
+.ds-h{font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin:0 0 14px}
+.ds-section{margin-bottom:26px}
+.list{max-width:420px;border:1px dashed var(--outline-variant);border-radius:12px;overflow:hidden}
+.rrow{display:flex;align-items:center;padding:8px 16px;gap:8px}
+.rrow + .rrow{border-top:1px solid var(--outline-variant)}
+.rrow .main{flex:1;min-width:0}
+.rrow .line1{font:400 16px/1.5 Roboto,system-ui,sans-serif}
+.rrow .line2{font:400 14px/1.45 Roboto,system-ui,sans-serif;color:var(--text-dim)}
+.rrow .line3{font:400 12px/1.5 Roboto,system-ui,sans-serif;color:var(--text-dim)}
+.icon-btn{width:48px;height:48px;flex:none;border:none;border-radius:999px;background:transparent;color:var(--text-dim);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.icon-btn:hover{background:rgba(237,234,228,.08)}
+.icon-btn svg{width:22px;height:22px;fill:currentColor}
+.frow{display:block;width:100%;text-align:left;padding:10px 16px;background:none;border:none;cursor:pointer}
+.frow:hover{background:rgba(237,234,228,.05)}
+.frow .name{font:400 16px/1.5 Roboto,system-ui,sans-serif;color:var(--text)}
+.frow.selected .name{color:var(--amber)}
+.frow .note{font:400 14px/1.45 Roboto,system-ui,sans-serif;color:var(--text-dim)}
+.empty{max-width:420px;border:1px dashed var(--outline-variant);border-radius:12px;padding:48px 24px;text-align:center;font:400 16px/1.5 Roboto,system-ui,sans-serif;color:var(--text-dim)}
+.cap{font-size:12px;color:var(--text-dim);margin-top:10px;line-height:1.5;max-width:56ch}
+</style>
+</head>
+<body>
+
+<div class="ds-section">
+  <h1 class="ds-h">Reading log rows</h1>
+  <div class="list">
+    <div class="rrow">
+      <div class="main">
+        <div class="line1">f/5.6&nbsp; ·&nbsp; 1/125&nbsp; ·&nbsp; ISO 400</div>
+        <div class="line2">EV 11.3 · EC +⅔ · Tri-X 400</div>
+        <div class="line3">Jul 16, 2026, 2:41 PM — kitchen window, golden hour</div>
+      </div>
+      <button class="icon-btn" title="Delete"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
+    </div>
+    <div class="rrow">
+      <div class="main">
+        <div class="line1">f/16&nbsp; ·&nbsp; 30s&nbsp; ·&nbsp; ISO 100</div>
+        <div class="line2">EV 2.0 · reciprocity → 1m 24s</div>
+        <div class="line3">Jul 15, 2026, 9:12 PM</div>
+      </div>
+      <button class="icon-btn" title="Delete"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
+    </div>
+  </div>
+  <p class="cap">Exposure triangle leads at 16sp; metadata dims below. Hairline dividers between rows. Delete is a trailing icon; the snackbar offers Undo.</p>
+</div>
+
+<div class="ds-section">
+  <h1 class="ds-h">Film picker rows (bottom sheet)</h1>
+  <div class="list">
+    <button class="frow"><span class="name">None</span></button>
+    <button class="frow selected"><span class="name">Kodak Tri-X 400</span><br><span class="note">classic Schwarzschild correction</span></button>
+    <button class="frow"><span class="name">Ilford HP5 Plus</span><br><span class="note">mild reciprocity failure</span></button>
+    <button class="frow"><span class="name">Fujifilm Acros 100 II</span><br><span class="note">nearly immune to reciprocity failure</span></button>
+  </div>
+  <p class="cap">The selected stock's name turns amber. Notes describe reciprocity behavior in plain language.</p>
+</div>
+
+<div class="ds-section">
+  <h1 class="ds-h">Empty state</h1>
+  <div class="empty">No saved readings yet.</div>
+</div>
+
+</body>
+</html>

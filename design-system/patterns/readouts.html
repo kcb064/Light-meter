@@ -1,0 +1,70 @@
+<!-- @dsCard group="Patterns" name="Readouts" subtitle="EV readout · solution panel · status microcopy" width="720" height="640" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Light Meter · Readouts</title>
+<style>
+:root{
+--bg:#0E0E10;--surface-1:#17171A;
+--amber:#FFB74D;--text:#EDEAE4;--text-dim:#9C988F;--outline-variant:#2A2A2E;--error:#FF8A65;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:Roboto,"Helvetica Neue",Arial,system-ui,sans-serif;font-variant-numeric:tabular-nums;padding:28px;-webkit-font-smoothing:antialiased}
+.ds-h{font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin:0 0 14px}
+.cols{display:flex;gap:20px;flex-wrap:wrap}
+.panel{flex:1;min-width:300px;border:1px dashed var(--outline-variant);border-radius:12px;padding:20px 16px;text-align:center}
+.panel-title{font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:12px;text-align:left}
+.ev{font:500 24px/1.25 Roboto,system-ui,sans-serif}
+.ev.held{color:var(--amber)}
+.status{font:500 12px/1.5 Roboto,system-ui,sans-serif;letter-spacing:.5px;color:var(--text-dim)}
+.big{font:300 48px/1.15 Roboto,system-ui,sans-serif;margin:6px 0 2px}
+.summary{font:400 14px/1.5 Roboto,system-ui,sans-serif;color:var(--text-dim)}
+.recip{font:500 16px/1.6 Roboto,system-ui,sans-serif;color:var(--amber)}
+.err{font:500 12px/1.6 Roboto,system-ui,sans-serif;letter-spacing:.5px;color:var(--error)}
+.cap{font-size:12px;color:var(--text-dim);margin-top:16px;line-height:1.6;max-width:64ch}
+.cap b{color:var(--text);font-weight:500}
+</style>
+</head>
+<body>
+
+<h1 class="ds-h">EV readout — the meter's pulse</h1>
+<div class="cols">
+  <div class="panel">
+    <div class="panel-title">Live</div>
+    <div class="ev">EV 11.3</div>
+  </div>
+  <div class="panel">
+    <div class="panel-title">Held</div>
+    <div class="ev held">EV 11.3</div>
+    <div class="status">HELD</div>
+  </div>
+  <div class="panel">
+    <div class="panel-title">Settling</div>
+    <div class="ev">EV 11.3</div>
+    <div class="status">settling…</div>
+  </div>
+</div>
+
+<h1 class="ds-h" style="margin-top:24px">Solution panel — the answer, biggest thing on screen</h1>
+<div class="cols">
+  <div class="panel">
+    <div class="big">1/125</div>
+    <div class="summary">f/5.6&nbsp; ·&nbsp; 1/125&nbsp; ·&nbsp; ISO 400</div>
+  </div>
+  <div class="panel">
+    <div class="big">30s</div>
+    <div class="summary">f/16&nbsp; ·&nbsp; 30s&nbsp; ·&nbsp; ISO 100</div>
+    <div class="recip">Tri-X 400 reciprocity: 30s → 1m 24s</div>
+    <div class="err">beyond the standard range — clamped</div>
+  </div>
+</div>
+
+<p class="cap">
+<b>Hierarchy:</b> the solved variable (shutter in A-priority, aperture in S-priority) is a 48sp light display; the full exposure triangle sits beneath it in dim 14sp joined by middle dots.
+<b>Held state turns the EV amber</b> — the one place color signals state. Status microcopy is 12sp label under the value: <i>HELD</i>, <i>settling…</i>, <i>unsteady light — reading may be off</i>.
+<b>Reciprocity corrections</b> are amber (they matter — the film needs more time). Range clamps are error coral. Empty state is an em dash: <i>EV —</i>, <i>waiting for a reading</i>.
+</p>
+
+</body>
+</html>

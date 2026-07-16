@@ -1,0 +1,57 @@
+/* Light Meter design tokens
+   Source of truth: app/src/main/java/com/kevinboutwell/lightmeter/ui/theme/
+   Dark-only, photography-focused palette: near-black surfaces with a single
+   amber accent (kind to dark-adapted eyes). No dynamic color on purpose. */
+
+:root {
+  /* Color — surfaces */
+  --lm-bg: #0E0E10;              /* NearBlack — background & surface */
+  --lm-surface-1: #17171A;       /* surfaceVariant / surfaceContainer */
+  --lm-surface-2: #202024;       /* surfaceContainerHigh(est), secondaryContainer */
+
+  /* Color — accent */
+  --lm-amber: #FFB74D;           /* primary — held readings, reciprocity, active states */
+  --lm-amber-dim: #CC8F33;       /* secondary */
+  --lm-on-amber: #201400;        /* onPrimary / onSecondary */
+  --lm-amber-container: #3A2B10; /* primaryContainer — selected chip fill */
+
+  /* Color — content */
+  --lm-text: #EDEAE4;            /* onBackground / onSurface */
+  --lm-text-dim: #9C988F;        /* onSurfaceVariant, tertiary — labels, microcopy */
+
+  /* Color — strokes */
+  --lm-outline: #3A3A40;         /* outline — chip borders, disabled icons */
+  --lm-outline-variant: #2A2A2E; /* outlineVariant — dividers */
+
+  /* Color — feedback */
+  --lm-error: #FF8A65;           /* error — out-of-range, destructive */
+  --lm-on-error: #2D0C00;
+
+  /* Type scale (Roboto / platform default, tabular figures on all numerics) */
+  --lm-display-lg: 300 72px/1.1 Roboto, system-ui, sans-serif;   /* hero readout */
+  --lm-display-md: 300 48px/1.15 Roboto, system-ui, sans-serif;  /* solution value */
+  --lm-display-sm: 400 34px/1.2 Roboto, system-ui, sans-serif;   /* lux readout */
+  --lm-headline-md: 500 24px/1.25 Roboto, system-ui, sans-serif; /* EV, dial values */
+  --lm-title-md: 500 16px/1.4 Roboto, system-ui, sans-serif;     /* app bar, list titles */
+  --lm-body-lg: 400 16px/1.5 Roboto, system-ui, sans-serif;
+  --lm-body-md: 400 14px/1.45 Roboto, system-ui, sans-serif;
+  --lm-label-lg: 500 14px/1.3 Roboto, system-ui, sans-serif;     /* buttons; +0.5px tracking */
+  --lm-label-md: 500 12px/1.3 Roboto, system-ui, sans-serif;     /* dial labels; +0.5px tracking, uppercase */
+
+  /* Spacing — 4dp grid */
+  --lm-space-1: 4px;
+  --lm-space-2: 8px;
+  --lm-space-3: 12px;
+  --lm-space-4: 16px;   /* screen gutter */
+  --lm-space-6: 24px;   /* empty-state / panel padding */
+
+  /* Shape (Material 3 defaults as used) */
+  --lm-radius-s: 8px;    /* chips */
+  --lm-radius-m: 12px;   /* cards, dialogs use 28px per M3 */
+  --lm-radius-dialog: 28px;
+  --lm-radius-full: 999px; /* buttons, icon buttons */
+
+  /* Component metrics */
+  --lm-dial-width: 88px;
+  --lm-touch-target: 48px;
+}

@@ -1,0 +1,82 @@
+<!-- @dsCard group="Components" name="Buttons" subtitle="Filled / outlined / text / icon / stepper · enabled & disabled" width="720" height="560" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Light Meter · Buttons</title>
+<style>
+:root{
+--bg:#0E0E10;--surface-1:#17171A;--surface-2:#202024;
+--amber:#FFB74D;--on-amber:#201400;--text:#EDEAE4;--text-dim:#9C988F;
+--outline:#3A3A40;--outline-variant:#2A2A2E;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:Roboto,"Helvetica Neue",Arial,system-ui,sans-serif;font-variant-numeric:tabular-nums;padding:28px;-webkit-font-smoothing:antialiased}
+.ds-h{font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin:0 0 14px}
+.ds-section{margin-bottom:26px}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+button{font:500 14px/1 Roboto,system-ui,sans-serif;letter-spacing:.5px;border:none;cursor:pointer;font-variant-numeric:tabular-nums}
+.btn{height:40px;padding:0 24px;border-radius:999px}
+.btn-filled{background:var(--amber);color:var(--on-amber)}
+.btn-filled:hover{box-shadow:0 0 0 8px rgba(255,183,77,.08)}
+.btn-filled[disabled]{background:rgba(237,234,228,.12);color:rgba(237,234,228,.38);cursor:default}
+.btn-outlined{background:transparent;color:var(--amber);border:1px solid var(--outline)}
+.btn-outlined:hover{background:rgba(255,183,77,.08)}
+.btn-outlined[disabled]{color:rgba(237,234,228,.38);border-color:rgba(58,58,64,.6);cursor:default}
+.btn-text{background:transparent;color:var(--amber);height:40px;padding:0 12px;border-radius:999px}
+.btn-text:hover{background:rgba(255,183,77,.08)}
+.icon-btn{width:48px;height:48px;border-radius:999px;background:transparent;color:var(--text);display:inline-flex;align-items:center;justify-content:center}
+.icon-btn:hover{background:rgba(237,234,228,.08)}
+.icon-btn.step{color:var(--amber)}
+.icon-btn.step[disabled]{color:var(--outline);cursor:default}
+.icon-btn svg{width:24px;height:24px;fill:currentColor}
+.cap{font-size:12px;color:var(--text-dim);margin-top:8px;line-height:1.5}
+</style>
+</head>
+<body>
+
+<div class="ds-section">
+  <h1 class="ds-h">Filled — the single primary action per screen</h1>
+  <div class="row">
+    <button class="btn btn-filled">Save</button>
+    <button class="btn btn-filled">Allow camera</button>
+    <button class="btn btn-filled" disabled>Save</button>
+  </div>
+  <p class="cap">Amber fill, near-black label. Disabled until there's a valid reading (12% white fill, 38% label).</p>
+</div>
+
+<div class="ds-section">
+  <h1 class="ds-h">Outlined — secondary action, pairs with filled</h1>
+  <div class="row">
+    <button class="btn btn-outlined">Hold</button>
+    <button class="btn btn-outlined">Resume</button>
+    <button class="btn btn-outlined">Calibrate</button>
+    <button class="btn btn-outlined" disabled>Hold</button>
+  </div>
+  <p class="cap">Paired buttons share a row at equal weight with a 12dp gap: <b>Hold</b> (outlined) beside <b>Save</b> (filled).</p>
+</div>
+
+<div class="ds-section">
+  <h1 class="ds-h">Text — dialogs, sheet rows</h1>
+  <div class="row">
+    <button class="btn-text">Cancel</button>
+    <button class="btn-text">Save</button>
+    <button class="btn-text">Undo</button>
+  </div>
+</div>
+
+<div class="ds-section">
+  <h1 class="ds-h">Icon &amp; stepper buttons</h1>
+  <div class="row">
+    <button class="icon-btn" title="Reading log"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg></button>
+    <button class="icon-btn" title="Settings"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7 7 0 0 0-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.48.48 0 0 0-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.01-1.58zM12 15.6A3.61 3.61 0 0 1 8.4 12c0-1.98 1.62-3.6 3.6-3.6s3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></button>
+    <span style="width:20px"></span>
+    <button class="icon-btn step" title="Step up"><svg viewBox="0 0 24 24"><path d="M7.41 15.41 12 10.83l4.59 4.58L18 14l-6-6-6 6z"/></svg></button>
+    <button class="icon-btn step" title="Step down"><svg viewBox="0 0 24 24"><path d="m7.41 8.59 4.59 4.58 4.59-4.58L18 10l-6 6-6-6z"/></svg></button>
+    <button class="icon-btn step" disabled title="At end of range"><svg viewBox="0 0 24 24"><path d="m7.41 8.59 4.59 4.58 4.59-4.58L18 10l-6 6-6-6z"/></svg></button>
+  </div>
+  <p class="cap">Stepper arrows are amber when a step is available, outline gray at the end of the stop table. 48dp touch targets.</p>
+</div>
+
+</body>
+</html>

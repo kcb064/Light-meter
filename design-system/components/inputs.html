@@ -1,0 +1,56 @@
+<!-- @dsCard group="Components" name="Inputs" subtitle="Outlined text field · slider" width="720" height="460" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Light Meter · Inputs</title>
+<style>
+:root{
+--bg:#0E0E10;--surface-1:#17171A;--surface-2:#202024;
+--amber:#FFB74D;--text:#EDEAE4;--text-dim:#9C988F;--outline:#3A3A40;--outline-variant:#2A2A2E;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:Roboto,"Helvetica Neue",Arial,system-ui,sans-serif;font-variant-numeric:tabular-nums;padding:28px;-webkit-font-smoothing:antialiased}
+.ds-h{font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin:0 0 14px}
+.ds-section{margin-bottom:28px}
+.field{position:relative;width:280px;margin-bottom:8px}
+.field input{width:100%;height:56px;background:transparent;border:1px solid var(--outline);border-radius:8px;color:var(--text);font:400 16px Roboto,system-ui,sans-serif;padding:0 16px;outline:none}
+.field.focus input{border:2px solid var(--amber);padding:0 15px}
+.field label{position:absolute;top:-8px;left:12px;background:var(--bg);padding:0 4px;font-size:12px;color:var(--text-dim)}
+.field.focus label{color:var(--amber)}
+.field.rest input::placeholder{color:var(--text-dim)}
+.slider-demo{width:320px}
+.slider-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text-dim);margin-bottom:10px;letter-spacing:.5px;font-weight:500}
+.slider-label b{color:var(--text);font-weight:500}
+.track{position:relative;height:4px;border-radius:2px;background:var(--surface-2)}
+.track .fill{position:absolute;left:0;top:0;bottom:0;width:62%;background:var(--amber);border-radius:2px}
+.track .thumb{position:absolute;left:62%;top:50%;transform:translate(-50%,-50%);width:20px;height:20px;border-radius:50%;background:var(--amber);box-shadow:0 0 0 8px rgba(255,183,77,.12)}
+.cap{font-size:12px;color:var(--text-dim);margin-top:10px;line-height:1.5}
+</style>
+</head>
+<body>
+
+<div class="ds-section">
+  <h1 class="ds-h">Outlined text field</h1>
+  <div class="field rest">
+    <label>Note (optional)</label>
+    <input placeholder="Kitchen window, golden hour">
+  </div>
+  <div class="field focus">
+    <label>Measured f-number</label>
+    <input value="5.6">
+  </div>
+  <p class="cap">Rest: 1dp outline stroke. Focus: 2dp amber stroke, amber floating label. Single-line; used for reading notes and calibration entries.</p>
+</div>
+
+<div class="ds-section">
+  <h1 class="ds-h">Slider — calibration offset</h1>
+  <div class="slider-demo">
+    <div class="slider-label"><span>METER OFFSET</span><b>+0.7 EV</b></div>
+    <div class="track"><div class="fill"></div><div class="thumb"></div></div>
+  </div>
+  <p class="cap">Amber active track and thumb on Surface-2 inactive track. The live value echoes beside the label in tabular figures.</p>
+</div>
+
+</body>
+</html>

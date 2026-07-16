@@ -1,0 +1,60 @@
+<!-- @dsCard group="Components" name="Filter Chips" subtitle="Mode & priority toggles · selected / unselected / disabled" width="720" height="420" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Light Meter · Filter Chips</title>
+<style>
+:root{
+--bg:#0E0E10;--surface-1:#17171A;--surface-2:#202024;
+--amber:#FFB74D;--amber-container:#3A2B10;--text:#EDEAE4;--text-dim:#9C988F;
+--outline:#3A3A40;--outline-variant:#2A2A2E;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:Roboto,"Helvetica Neue",Arial,system-ui,sans-serif;font-variant-numeric:tabular-nums;padding:28px;-webkit-font-smoothing:antialiased}
+.ds-h{font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin:0 0 14px}
+.ds-section{margin-bottom:26px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.chip{height:32px;padding:0 16px;border-radius:8px;display:inline-flex;align-items:center;gap:8px;font:500 14px/1 Roboto,system-ui,sans-serif;letter-spacing:.1px;cursor:pointer;border:1px solid var(--outline);background:transparent;color:var(--text)}
+.chip:hover{background:rgba(237,234,228,.06)}
+.chip.selected{background:var(--amber-container);border-color:transparent;color:var(--amber)}
+.chip.selected .check{width:18px;height:18px;fill:var(--amber)}
+.chip[aria-disabled="true"]{color:rgba(237,234,228,.38);border-color:rgba(58,58,64,.6);cursor:default}
+.cap{font-size:12px;color:var(--text-dim);margin-top:8px;line-height:1.5}
+.spacer{flex:1}
+.demo{border:1px dashed var(--outline-variant);border-radius:12px;padding:12px 16px}
+</style>
+</head>
+<body>
+
+<div class="ds-section">
+  <h1 class="ds-h">States</h1>
+  <div class="row">
+    <span class="chip selected"><svg class="check" viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Selected</span>
+    <span class="chip">Unselected</span>
+    <span class="chip" aria-disabled="true">Disabled</span>
+  </div>
+  <p class="cap">Selected: amber-container fill, amber content, leading check. Unselected: outline stroke on transparent. Disabled when hardware is missing (e.g. no spot support).</p>
+</div>
+
+<div class="ds-section">
+  <h1 class="ds-h">Priority row — exclusive pair + trailing picker</h1>
+  <div class="demo row">
+    <span class="chip selected"><svg class="check" viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>A priority</span>
+    <span class="chip">S priority</span>
+    <span class="spacer"></span>
+    <span class="chip selected"><svg class="check" viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Tri-X 400</span>
+  </div>
+  <p class="cap">The film chip doubles as a picker (opens the film sheet). Unset it reads <i>Film…</i>; set, it shows the stock name and stays selected.</p>
+</div>
+
+<div class="ds-section">
+  <h1 class="ds-h">Metering row</h1>
+  <div class="demo row">
+    <span class="chip selected"><svg class="check" viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Spot (tap to meter)</span>
+    <span class="chip">Average</span>
+  </div>
+</div>
+
+</body>
+</html>

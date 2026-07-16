@@ -1,0 +1,54 @@
+<!-- @dsCard group="Components" name="App Bar & Tabs" subtitle="Compact header · Reflective / Incident mode tabs" width="720" height="380" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Light Meter · App Bar &amp; Tabs</title>
+<style>
+:root{
+--bg:#0E0E10;--surface-1:#17171A;
+--amber:#FFB74D;--text:#EDEAE4;--text-dim:#9C988F;--outline:#3A3A40;--outline-variant:#2A2A2E;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:Roboto,"Helvetica Neue",Arial,system-ui,sans-serif;font-variant-numeric:tabular-nums;padding:28px;-webkit-font-smoothing:antialiased}
+.ds-h{font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin:0 0 14px}
+.phone{max-width:400px;border:1px dashed var(--outline-variant);border-radius:12px;overflow:hidden}
+.appbar{display:flex;align-items:center;padding:4px 4px 4px 16px}
+.appbar .title{font:500 16px/1.4 Roboto,system-ui,sans-serif;letter-spacing:.15px}
+.appbar .spacer{flex:1}
+.icon-btn{width:48px;height:48px;border:none;border-radius:999px;background:transparent;color:var(--text);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.icon-btn:hover{background:rgba(237,234,228,.08)}
+.icon-btn svg{width:24px;height:24px;fill:currentColor}
+.tabs{display:flex;border-bottom:1px solid var(--outline-variant)}
+.tab{flex:1;height:48px;display:flex;align-items:center;justify-content:center;font:500 14px/1 Roboto,system-ui,sans-serif;letter-spacing:.1px;color:var(--text-dim);position:relative;cursor:pointer;background:none;border:none}
+.tab.active{color:var(--amber)}
+.tab.active::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--amber);border-radius:3px 3px 0 0}
+.tab[disabled]{color:rgba(237,234,228,.38);cursor:default}
+.cap{font-size:12px;color:var(--text-dim);margin-top:14px;line-height:1.6;max-width:60ch}
+.cap b{color:var(--text);font-weight:500}
+</style>
+</head>
+<body>
+
+<h1 class="ds-h">Meter screen header</h1>
+
+<div class="phone">
+  <div class="appbar">
+    <span class="title">Light Meter</span>
+    <span class="spacer"></span>
+    <button class="icon-btn" title="Reading log"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg></button>
+    <button class="icon-btn" title="Settings"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7 7 0 0 0-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.48.48 0 0 0-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.01-1.58zM12 15.6A3.61 3.61 0 0 1 8.4 12c0-1.98 1.62-3.6 3.6-3.6s3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></button>
+  </div>
+  <div class="tabs">
+    <button class="tab active">Reflective</button>
+    <button class="tab">Incident</button>
+  </div>
+</div>
+
+<p class="cap">
+<b>Compact, not a TopAppBar:</b> the meter screen uses a slim 16dp-padded row (title + trailing icon buttons) so everything fits on one screen. Sub-screens (Log, Settings, Calibration) use a standard Material top app bar with a back arrow.
+<b>Tabs</b> switch metering mode; the active tab is amber with a 3dp indicator. <b>Incident is disabled</b> when the device has no ambient light sensor.
+</p>
+
+</body>
+</html>

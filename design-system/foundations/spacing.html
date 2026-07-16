@@ -1,0 +1,56 @@
+<!-- @dsCard group="Foundations" name="Spacing & Shape" subtitle="4dp grid · gutters · radii · touch targets" width="760" height="620" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Light Meter · Spacing &amp; Shape</title>
+<style>
+:root{
+--bg:#0E0E10;--surface-1:#17171A;--surface-2:#202024;
+--amber:#FFB74D;--amber-container:#3A2B10;--text:#EDEAE4;--text-dim:#9C988F;
+--outline:#3A3A40;--outline-variant:#2A2A2E;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:Roboto,"Helvetica Neue",Arial,system-ui,sans-serif;font-variant-numeric:tabular-nums;padding:28px;-webkit-font-smoothing:antialiased}
+.ds-h{font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin:0 0 14px}
+.ds-section{margin-bottom:28px}
+.srow{display:flex;align-items:center;gap:16px;margin-bottom:10px}
+.srow code{width:150px;flex:none;font-size:12px;color:var(--text-dim);font-family:ui-monospace,Menlo,Consolas,monospace}
+.bar{height:20px;background:var(--amber-container);border:1px solid var(--amber);border-radius:3px}
+.srow small{font-size:12px;color:var(--text-dim)}
+.shapes{display:flex;gap:16px;flex-wrap:wrap}
+.shape{background:var(--surface-2);border:1px solid var(--outline-variant);width:150px;height:76px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px}
+.shape b{font-size:13px;font-weight:500}
+.shape small{font-size:11px;color:var(--text-dim)}
+.note{font-size:13px;color:var(--text-dim);line-height:1.5;max-width:62ch}
+.note b{color:var(--text);font-weight:500}
+</style>
+</head>
+<body>
+
+<div class="ds-section">
+  <h1 class="ds-h">Spacing — 4dp grid</h1>
+  <div class="srow"><code>space-1 · 4dp</code><div class="bar" style="width:4px"></div><small>vertical rhythm between stacked readouts</small></div>
+  <div class="srow"><code>space-2 · 8dp</code><div class="bar" style="width:8px"></div><small>gaps between chips</small></div>
+  <div class="srow"><code>space-3 · 12dp</code><div class="bar" style="width:12px"></div><small>gap between paired action buttons</small></div>
+  <div class="srow"><code>space-4 · 16dp</code><div class="bar" style="width:16px"></div><small>screen gutter (horizontal padding)</small></div>
+  <div class="srow"><code>space-6 · 24dp</code><div class="bar" style="width:24px"></div><small>empty-state and panel padding</small></div>
+</div>
+
+<div class="ds-section">
+  <h1 class="ds-h">Shape</h1>
+  <div class="shapes">
+    <div class="shape" style="border-radius:8px"><b>8dp</b><small>chips</small></div>
+    <div class="shape" style="border-radius:16px"><b>16dp</b><small>cards, sheets (top)</small></div>
+    <div class="shape" style="border-radius:28px"><b>28dp</b><small>dialogs</small></div>
+    <div class="shape" style="border-radius:999px"><b>Full</b><small>buttons, icon buttons</small></div>
+  </div>
+</div>
+
+<div class="ds-section">
+  <h1 class="ds-h">Metrics</h1>
+  <p class="note"><b>Dial column: 88dp wide</b>, dials distributed with space-evenly across the full width. <b>Touch targets: 48dp minimum</b> (icon buttons, steppers). The meter screen is designed to <b>fit on one screen with no scrolling</b> — viewfinder flexes, readouts and dials keep fixed compact heights.</p>
+</div>
+
+</body>
+</html>

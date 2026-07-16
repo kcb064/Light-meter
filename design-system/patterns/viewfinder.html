@@ -1,0 +1,56 @@
+<!-- @dsCard group="Patterns" name="Viewfinder" subtitle="Camera preview · spot reticle · metering chips" width="720" height="560" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Light Meter · Viewfinder</title>
+<style>
+:root{
+--bg:#0E0E10;--surface-1:#17171A;
+--amber:#FFB74D;--amber-container:#3A2B10;--text:#EDEAE4;--text-dim:#9C988F;--outline:#3A3A40;--outline-variant:#2A2A2E;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:Roboto,"Helvetica Neue",Arial,system-ui,sans-serif;font-variant-numeric:tabular-nums;padding:28px;-webkit-font-smoothing:antialiased}
+.ds-h{font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin:0 0 14px}
+.phone{max-width:380px}
+.vf{position:relative;height:300px;border-radius:12px;overflow:hidden;background:
+  radial-gradient(120% 90% at 70% 20%, #35322c 0%, #23211e 40%, #141412 100%)}
+.vf .reticle{position:absolute;left:58%;top:38%;width:56px;height:56px;transform:translate(-50%,-50%)}
+.vf .reticle circle{fill:none;stroke:var(--amber);stroke-width:2}
+.vf .reticle line{stroke:var(--amber);stroke-width:2}
+.vf .hint{position:absolute;left:0;right:0;bottom:10px;text-align:center;font:500 12px/1 Roboto,system-ui,sans-serif;letter-spacing:.5px;color:rgba(237,234,228,.7)}
+.chips{display:flex;gap:8px;margin-top:10px}
+.chip{height:32px;padding:0 16px;border-radius:8px;display:inline-flex;align-items:center;gap:8px;font:500 14px/1 Roboto,system-ui,sans-serif;border:1px solid var(--outline);color:var(--text)}
+.chip.selected{background:var(--amber-container);border-color:transparent;color:var(--amber)}
+.chip svg{width:18px;height:18px;fill:var(--amber)}
+.cap{font-size:12px;color:var(--text-dim);margin-top:16px;line-height:1.6;max-width:60ch}
+.cap b{color:var(--text);font-weight:500}
+</style>
+</head>
+<body>
+
+<h1 class="ds-h">Reflective viewfinder</h1>
+
+<div class="phone">
+  <div class="vf">
+    <svg class="reticle" viewBox="0 0 56 56">
+      <circle cx="28" cy="28" r="18"/>
+      <line x1="28" y1="0" x2="28" y2="10"/><line x1="28" y1="46" x2="28" y2="56"/>
+      <line x1="0" y1="28" x2="10" y2="28"/><line x1="46" y1="28" x2="56" y2="28"/>
+    </svg>
+    <div class="hint">tap to meter</div>
+  </div>
+  <div class="chips">
+    <span class="chip selected"><svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Spot (tap to meter)</span>
+    <span class="chip">Average</span>
+  </div>
+</div>
+
+<p class="cap">
+<b>The live preview is the only bright region on screen</b> — everything around it stays near-black so the scene reads like ground glass.
+<b>Spot mode:</b> tapping drops an amber crosshair reticle (circle + ticks) where the meter samples; the reticle is the same amber as every other "active" signal.
+<b>Average mode</b> hides the reticle and meters the full frame. The viewfinder flexes vertically; readouts and dials below keep fixed heights so the whole meter fits without scrolling.
+</p>
+
+</body>
+</html>

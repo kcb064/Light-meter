@@ -1,0 +1,83 @@
+<!-- @dsCard group="Foundations" name="Colors" subtitle="Dark-only palette · single amber accent" width="760" height="720" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Light Meter · Colors</title>
+<style>
+:root{
+--bg:#0E0E10;--surface-1:#17171A;--surface-2:#202024;
+--amber:#FFB74D;--amber-dim:#CC8F33;--on-amber:#201400;--amber-container:#3A2B10;
+--text:#EDEAE4;--text-dim:#9C988F;
+--outline:#3A3A40;--outline-variant:#2A2A2E;
+--error:#FF8A65;--on-error:#2D0C00;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:Roboto,"Helvetica Neue",Arial,system-ui,sans-serif;font-variant-numeric:tabular-nums;padding:28px;-webkit-font-smoothing:antialiased}
+.ds-h{font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin:0 0 14px}
+.ds-section{margin-bottom:28px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.swatch{border-radius:12px;overflow:hidden;border:1px solid var(--outline-variant)}
+.swatch .chip{height:72px;display:flex;align-items:flex-end;padding:10px}
+.swatch .chip span{font-size:11px;font-weight:500;letter-spacing:.04em}
+.swatch .meta{background:var(--surface-1);padding:10px 12px}
+.swatch .meta b{display:block;font-size:13px;font-weight:500}
+.swatch .meta code{font-size:11px;color:var(--text-dim);font-family:ui-monospace,Menlo,Consolas,monospace}
+.swatch .meta small{display:block;font-size:11px;color:var(--text-dim);margin-top:4px;line-height:1.4}
+.note{font-size:13px;color:var(--text-dim);line-height:1.5;max-width:60ch}
+</style>
+</head>
+<body>
+
+<div class="ds-section">
+  <h1 class="ds-h">Accent</h1>
+  <div class="grid">
+    <div class="swatch"><div class="chip" style="background:#FFB74D"><span style="color:#201400">Aa</span></div>
+      <div class="meta"><b>Amber · primary</b><code>#FFB74D</code><small>Held readings, reciprocity notes, active steppers, selected text</small></div></div>
+    <div class="swatch"><div class="chip" style="background:#CC8F33"><span style="color:#201400">Aa</span></div>
+      <div class="meta"><b>Amber Dim · secondary</b><code>#CC8F33</code><small>Secondary accent</small></div></div>
+    <div class="swatch"><div class="chip" style="background:#3A2B10"><span style="color:#FFB74D">Aa</span></div>
+      <div class="meta"><b>Amber Container</b><code>#3A2B10</code><small>Selected chip fill; content on it is Amber</small></div></div>
+    <div class="swatch"><div class="chip" style="background:#201400"><span style="color:#FFB74D">Aa</span></div>
+      <div class="meta"><b>On Amber</b><code>#201400</code><small>Text/icons on amber fills</small></div></div>
+  </div>
+</div>
+
+<div class="ds-section">
+  <h1 class="ds-h">Surfaces</h1>
+  <div class="grid">
+    <div class="swatch"><div class="chip" style="background:#0E0E10;border-bottom:1px solid #2A2A2E"><span style="color:#EDEAE4">Aa</span></div>
+      <div class="meta"><b>Near Black · background</b><code>#0E0E10</code><small>App background and base surface</small></div></div>
+    <div class="swatch"><div class="chip" style="background:#17171A"><span style="color:#EDEAE4">Aa</span></div>
+      <div class="meta"><b>Surface 1</b><code>#17171A</code><small>Containers, surface variant</small></div></div>
+    <div class="swatch"><div class="chip" style="background:#202024"><span style="color:#EDEAE4">Aa</span></div>
+      <div class="meta"><b>Surface 2</b><code>#202024</code><small>Sheets, dialogs, raised containers</small></div></div>
+  </div>
+</div>
+
+<div class="ds-section">
+  <h1 class="ds-h">Content &amp; strokes</h1>
+  <div class="grid">
+    <div class="swatch"><div class="chip" style="background:#EDEAE4"><span style="color:#0E0E10">Aa</span></div>
+      <div class="meta"><b>Text Primary</b><code>#EDEAE4</code><small>Warm off-white; values and body copy</small></div></div>
+    <div class="swatch"><div class="chip" style="background:#9C988F"><span style="color:#0E0E10">Aa</span></div>
+      <div class="meta"><b>Text Secondary</b><code>#9C988F</code><small>Dial labels, microcopy, status lines</small></div></div>
+    <div class="swatch"><div class="chip" style="background:#3A3A40"><span style="color:#EDEAE4">Aa</span></div>
+      <div class="meta"><b>Outline</b><code>#3A3A40</code><small>Chip borders, disabled icons</small></div></div>
+    <div class="swatch"><div class="chip" style="background:#2A2A2E"><span style="color:#EDEAE4">Aa</span></div>
+      <div class="meta"><b>Outline Variant</b><code>#2A2A2E</code><small>Hairline dividers</small></div></div>
+  </div>
+</div>
+
+<div class="ds-section">
+  <h1 class="ds-h">Feedback</h1>
+  <div class="grid">
+    <div class="swatch"><div class="chip" style="background:#FF8A65"><span style="color:#2D0C00">Aa</span></div>
+      <div class="meta"><b>Error</b><code>#FF8A65</code><small>Out-of-range warnings, destructive actions. Soft coral — never pure red on the dark field</small></div></div>
+  </div>
+</div>
+
+<p class="note">Dark-only by design: the app is used beside cameras in low light, so surfaces stay near-black and the single amber accent preserves dark-adapted vision. No dynamic color, no light theme.</p>
+
+</body>
+</html>
