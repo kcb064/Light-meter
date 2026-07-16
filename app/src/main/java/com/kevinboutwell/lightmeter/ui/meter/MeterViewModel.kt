@@ -249,6 +249,26 @@ class MeterViewModel(
 
     fun setFilm(film: FilmStock) { inputs.update { it.copy(film = film) }; persistDials() }
 
+    /**
+     * Re-applies a logged reading's setup to the meter: ISO, EC, film, and
+     * both fixed dials. Priority isn't stored on readings, so the current
+     * priority keeps whichever restored dial it fixes.
+     */
+    fun applyReading(reading: ReadingEntity) {
+        inputs.update { current ->
+            current.copy(
+                iso = Stops.ISOS.firstOrNull { it.nominal == reading.isoNominal } ?: current.iso,
+                aperture = Stops.APERTURES.firstOrNull { it.nominal == reading.apertureNominal }
+                    ?: current.aperture,
+                shutter = Stops.SHUTTERS.firstOrNull { it.nominal == reading.shutterNominal }
+                    ?: current.shutter,
+                ecThirds = reading.ecThirds.coerceIn(-9, 9),
+                film = FilmStocks.byId(reading.filmId),
+            )
+        }
+        persistDials()
+    }
+
     fun saveReading(note: String?) {
         val state = uiState.value
         val ev = state.ev100 ?: return

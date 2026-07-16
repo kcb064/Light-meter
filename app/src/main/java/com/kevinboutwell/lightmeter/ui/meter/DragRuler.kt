@@ -53,7 +53,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DragRuler(
-    label: String,
+    label: String?,
     values: List<String>,
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
@@ -113,14 +113,16 @@ fun DragRuler(
             .height(54.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            label,
-            modifier = Modifier
-                .padding(start = 16.dp)
-                .width(78.dp),
-            style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 1.sp),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        if (label != null) {
+            Text(
+                label,
+                modifier = Modifier
+                    .padding(start = 16.dp)
+                    .width(78.dp),
+                style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 1.sp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
         BoxWithConstraints(
             modifier = Modifier
                 .weight(1f)
@@ -169,6 +171,19 @@ fun DragRuler(
             }
         }
     }
+}
+
+fun formatEcThirds(thirds: Int): String {
+    if (thirds == 0) return "0"
+    val sign = if (thirds > 0) "+" else "−"
+    val whole = abs(thirds) / 3
+    val frac = when (abs(thirds) % 3) {
+        1 -> "⅓"
+        2 -> "⅔"
+        else -> ""
+    }
+    val wholeText = if (whole > 0) "$whole" else ""
+    return "$sign$wholeText$frac"
 }
 
 /** Horizontal alpha mask — the fade at both ends is the swipe affordance. */

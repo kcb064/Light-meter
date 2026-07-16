@@ -31,6 +31,7 @@ fun ReflectiveViewfinder(
     onMeterAt: (androidx.camera.core.MeteringPoint) -> Unit,
     modifier: Modifier = Modifier,
     onLongPress: () -> Unit = {},
+    fillBox: Boolean = false,
 ) {
     val context = LocalContext.current
     // Inside a NavHost this is the back-stack entry: binding the camera to it
@@ -39,7 +40,10 @@ fun ReflectiveViewfinder(
     val lifecycleOwner = LocalLifecycleOwner.current
     val previewView = remember {
         PreviewView(context).apply {
-            scaleType = PreviewView.ScaleType.FIT_CENTER
+            // FILL crops to cover boxes much wider than the sensor frame
+            // (the calibration strip); FIT letterboxes for the meter screen.
+            scaleType = if (fillBox) PreviewView.ScaleType.FILL_CENTER
+            else PreviewView.ScaleType.FIT_CENTER
         }
     }
     var reticle by remember { mutableStateOf<Offset?>(null) }
