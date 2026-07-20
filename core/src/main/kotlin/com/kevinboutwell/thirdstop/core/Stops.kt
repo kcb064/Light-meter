@@ -1,5 +1,6 @@
 package com.kevinboutwell.thirdstop.core
 
+import java.util.Locale
 import kotlin.math.log2
 import kotlin.math.pow
 import kotlin.math.roundToInt
@@ -62,9 +63,21 @@ object Stops {
     val DEFAULT_APERTURE: StopValue = APERTURES.first { it.nominal == "5.6" }
     val DEFAULT_SHUTTER: StopValue = SHUTTERS.first { it.nominal == "1/125" }
 
+    /**
+     * Non-finite or non-positive inputs (an extreme EV overflowing 2^ev to
+     * Infinity upstream, or zero from the inverse) clamp to the matching end of
+     * the table instead of throwing: +Infinity to the top, everything else
+     * (zero, negative, NaN) to the bottom.
+     */
+    private fun degenerateSnap(value: Double, table: List<StopValue>): Snapped? = when {
+        value.isFinite() && value > 0 -> null
+        value > 0 -> Snapped(table.last(), table.lastIndex, true)
+        else -> Snapped(table.first(), 0, true)
+    }
+
     /** Snap a shutter time in seconds to the nearest third-stop value (log space). */
     fun snapShutter(seconds: Double): Snapped {
-        require(seconds > 0) { "shutter time must be positive: $seconds" }
+        degenerateSnap(seconds, SHUTTERS)?.let { return it }
         val k = (3.0 * log2(seconds)).roundToInt()
         val index = k - SHUTTER_K_MIN
         val clamped = index.coerceIn(0, SHUTTERS.lastIndex)
@@ -73,7 +86,7 @@ object Stops {
 
     /** Snap an f-number to the nearest third-stop value (log space). */
     fun snapAperture(n: Double): Snapped {
-        require(n > 0) { "aperture must be positive: $n" }
+        degenerateSnap(n, APERTURES)?.let { return it }
         val index = (6.0 * log2(n)).roundToInt()
         val clamped = index.coerceIn(0, APERTURES.lastIndex)
         return Snapped(APERTURES[clamped], clamped, index != clamped)
@@ -81,7 +94,7 @@ object Stops {
 
     /** Snap an ISO value to the nearest third-stop value (log space). */
     fun snapIso(iso: Double): Snapped {
-        require(iso > 0) { "iso must be positive: $iso" }
+        degenerateSnap(iso, ISOS)?.let { return it }
         val index = (3.0 * log2(iso / 25.0)).roundToInt()
         val clamped = index.coerceIn(0, ISOS.lastIndex)
         return Snapped(ISOS[clamped], clamped, index != clamped)
@@ -94,10 +107,11 @@ object Stops {
             val rounded = (seconds * 10).roundToInt() / 10.0
             if (rounded == rounded.toInt().toDouble()) "${rounded.toInt()}s" else "${rounded}s"
         }
-        seconds < 120.0 -> "${seconds.roundToInt()}s"
         else -> {
+            // Round before choosing a format so 119.6s becomes "2m 00s", not "120s".
             val total = seconds.roundToInt()
-            "${total / 60}m %02ds".format(total % 60)
+            if (total < 120) "${total}s"
+            else String.format(Locale.ROOT, "%dm %02ds", total / 60, total % 60)
         }
     }
 }

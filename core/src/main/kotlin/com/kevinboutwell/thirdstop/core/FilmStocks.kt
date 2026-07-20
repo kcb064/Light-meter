@@ -67,7 +67,7 @@ object FilmStocks {
         FilmStock("kodak-portra400", "Portra 400", "Kodak", 400, schedule(1.0 to 1.0, 10.0 to 13.0), KODAK_COLOR_NOTE),
         FilmStock("kodak-portra800", "Portra 800", "Kodak", 800, schedule(1.0 to 1.0, 10.0 to 13.0), KODAK_COLOR_NOTE),
         FilmStock("kodak-ektar", "Ektar 100", "Kodak", 100, schedule(1.0 to 1.0, 10.0 to 13.0), KODAK_COLOR_NOTE),
-        FilmStock("kodak-gold200", "Gold 200", "Kodak", 200, schedule(1.0 to 2.0, 10.0 to 40.0), "Consumer film; long-exposure color shift likely."),
+        FilmStock("kodak-gold200", "Gold 200", "Kodak", 200, schedule(0.5 to 0.5, 1.0 to 2.0, 10.0 to 40.0), "Consumer film; long-exposure color shift likely."),
     )
 
     // Fujifilm slide film.

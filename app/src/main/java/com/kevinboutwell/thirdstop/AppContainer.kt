@@ -6,12 +6,21 @@ import com.kevinboutwell.thirdstop.data.LightMeterDatabase
 import com.kevinboutwell.thirdstop.data.ReadingDao
 import com.kevinboutwell.thirdstop.data.SettingsRepository
 import com.kevinboutwell.thirdstop.sensor.AmbientLightMeter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 
 /**
  * Manual dependency container — deliberately no DI framework for an app this
  * size. Screen ViewModels pull what they need from here via their factories.
  */
 class AppContainer(private val appContext: Context) {
+    /**
+     * For fire-and-forget persistence (saves, deletes, undo) that must survive
+     * the ViewModel that started it being cleared.
+     */
+    val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
     private val database by lazy { LightMeterDatabase.build(appContext) }
 
     val readingDao: ReadingDao get() = database.readingDao()

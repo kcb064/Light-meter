@@ -6,11 +6,14 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import java.io.IOException
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 
 private val Context.settingsStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
@@ -66,15 +69,21 @@ class SettingsRepository(private val context: Context) {
         val lensPresetMm = intPreferencesKey("last_lens_preset_mm")
     }
 
-    val settings: Flow<AppSettings> = context.settingsStore.data.map { p ->
+    val settings: Flow<AppSettings> = context.settingsStore.data
+        .catch { e ->
+            // A corrupted or unreadable store falls back to defaults instead of
+            // crashing every collector at startup.
+            if (e is IOException) emit(emptyPreferences()) else throw e
+        }
+        .map { p ->
         AppSettings(
             reflective = ModeCalibration(
-                offsetEv = p[Keys.reflectiveOffset] ?: 0.0,
+                offsetEv = sanitizeOffset(p[Keys.reflectiveOffset] ?: 0.0),
                 calibratedAtEpochMs = p[Keys.reflectiveCalibratedAt],
                 source = p[Keys.reflectiveSource]?.let { runCatching { CalibrationSource.valueOf(it) }.getOrNull() },
             ),
             incident = ModeCalibration(
-                offsetEv = p[Keys.incidentOffset] ?: 0.0,
+                offsetEv = sanitizeOffset(p[Keys.incidentOffset] ?: 0.0),
                 calibratedAtEpochMs = p[Keys.incidentCalibratedAt],
                 source = p[Keys.incidentSource]?.let { runCatching { CalibrationSource.valueOf(it) }.getOrNull() },
             ),
@@ -115,15 +124,25 @@ class SettingsRepository(private val context: Context) {
         atEpochMs: Long,
     ) {
         context.settingsStore.edit { p ->
+            val sanitized = sanitizeOffset(offsetEv)
             if (reflectiveMode) {
-                p[Keys.reflectiveOffset] = offsetEv
+                p[Keys.reflectiveOffset] = sanitized
                 p[Keys.reflectiveCalibratedAt] = atEpochMs
                 p[Keys.reflectiveSource] = source.name
             } else {
-                p[Keys.incidentOffset] = offsetEv
+                p[Keys.incidentOffset] = sanitized
                 p[Keys.incidentCalibratedAt] = atEpochMs
                 p[Keys.incidentSource] = source.name
             }
         }
+    }
+
+    // Sanitized on read as well as write so an already-poisoned store recovers.
+    private fun sanitizeOffset(offsetEv: Double): Double =
+        if (offsetEv.isFinite()) offsetEv.coerceIn(-MAX_ABS_OFFSET_EV, MAX_ABS_OFFSET_EV) else 0.0
+
+    companion object {
+        /** No real phone meter is off by more than this; larger values are bad input. */
+        const val MAX_ABS_OFFSET_EV = 5.0
     }
 }

@@ -68,6 +68,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kevinboutwell.thirdstop.camera.ZoomCaps
 import com.kevinboutwell.thirdstop.core.FilmStocks
@@ -109,6 +110,14 @@ fun MeterScreen(
             ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) ==
                 PackageManager.PERMISSION_GRANTED,
         )
+    }
+    // Re-check on every resume: the user may grant permission from system
+    // settings and come back to a composition that would otherwise stay stale.
+    LifecycleResumeEffect(Unit) {
+        hasCameraPermission =
+            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) ==
+                PackageManager.PERMISSION_GRANTED
+        onPauseOrDispose { }
     }
     var permissionRequested by remember { mutableStateOf(false) }
     val permissionLauncher = rememberLauncherForActivityResult(

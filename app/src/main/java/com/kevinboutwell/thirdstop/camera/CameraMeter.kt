@@ -23,6 +23,7 @@ import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import com.kevinboutwell.thirdstop.core.Exposure
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -79,12 +80,44 @@ class CameraMeter(private val context: Context) {
     private var desiredZoomMm: Float? = null
     private var minZoomRatio = 1f
     private var maxZoomRatio = 1f
+    private var bindFailed = false
 
-    // Stability window, touched only from the camera callback thread.
+    // Stability window, shared between the camera callback thread and the main
+    // thread (resetStability via bind/meterAt/meterAverage) — guard with the lock.
+    private val stabilityLock = Any()
     private val recentEvs = ArrayDeque<Double>()
     private var framesSinceAction = 0
 
+    /**
+     * Binds the preview and starts metering. Never throws (except cancellation):
+     * failures surface through [unsupportedReason] so the UI can say something
+     * instead of sitting on "settling" forever.
+     */
     suspend fun bind(lifecycleOwner: LifecycleOwner, previewView: PreviewView) {
+        try {
+            bindInternal(lifecycleOwner, previewView)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            bindFailed = true
+            _unsupportedReason.value =
+                "Couldn't start the camera — it may be in use by another app."
+            _isSettling.value = false
+        }
+    }
+
+    /**
+     * Clears a previous bind failure so a returning viewfinder composes and
+     * retries. Permanent hardware verdicts (LEGACY level) are kept.
+     */
+    fun clearBindError() {
+        if (bindFailed) {
+            bindFailed = false
+            _unsupportedReason.value = null
+        }
+    }
+
+    private suspend fun bindInternal(lifecycleOwner: LifecycleOwner, previewView: PreviewView) {
         val cameraProvider = awaitProvider()
         provider = cameraProvider
 
@@ -104,6 +137,7 @@ class CameraMeter(private val context: Context) {
         val hardwareLevel = info.getCameraCharacteristic(
             CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL,
         )
+        bindFailed = false
         if (hardwareLevel == CameraMetadata.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY) {
             _unsupportedReason.value =
                 "This device's camera doesn't report exposure metadata. Use incident mode."
@@ -243,8 +277,10 @@ class CameraMeter(private val context: Context) {
     }
 
     private fun resetStability() {
-        recentEvs.clear()
-        framesSinceAction = 0
+        synchronized(stabilityLock) {
+            recentEvs.clear()
+            framesSinceAction = 0
+        }
         _isSettling.value = true
     }
 
@@ -265,7 +301,6 @@ class CameraMeter(private val context: Context) {
             val aperture = reportedAperture ?: fallbackAperture ?: DEFAULT_APERTURE
             val apertureIsFallback = reportedAperture == null
 
-            framesSinceAction++
             val converged = aeState == CameraMetadata.CONTROL_AE_STATE_CONVERGED ||
                 aeState == CameraMetadata.CONTROL_AE_STATE_LOCKED ||
                 aeState == CameraMetadata.CONTROL_AE_STATE_FLASH_REQUIRED
@@ -274,20 +309,26 @@ class CameraMeter(private val context: Context) {
             val effectiveIso = iso * (boost / 100.0)
             val ev100 = Exposure.ev100FromExposure(aperture, exposureSec, effectiveIso)
 
-            if (converged) {
-                recentEvs.addLast(ev100)
-                while (recentEvs.size > STABILITY_WINDOW) recentEvs.removeFirst()
-            } else {
-                recentEvs.clear()
+            val stable: Boolean
+            val timedOut: Boolean
+            val publishedEv: Double
+            synchronized(stabilityLock) {
+                framesSinceAction++
+                if (converged) {
+                    recentEvs.addLast(ev100)
+                    while (recentEvs.size > STABILITY_WINDOW) recentEvs.removeFirst()
+                } else {
+                    recentEvs.clear()
+                }
+                stable = recentEvs.size == STABILITY_WINDOW &&
+                    (recentEvs.max() - recentEvs.min()) <= STABILITY_TOLERANCE_EV
+                timedOut = framesSinceAction > TIMEOUT_FRAMES
+                publishedEv = if (stable) recentEvs.average() else ev100
             }
-
-            val stable = recentEvs.size == STABILITY_WINDOW &&
-                (recentEvs.max() - recentEvs.min()) <= STABILITY_TOLERANCE_EV
-            val timedOut = framesSinceAction > TIMEOUT_FRAMES
 
             if (stable || timedOut) {
                 _reading.value = AeReading(
-                    ev100 = if (stable) recentEvs.average() else ev100,
+                    ev100 = publishedEv,
                     iso = iso,
                     exposureTimeSec = exposureSec,
                     aperture = aperture,

@@ -3,6 +3,7 @@ package com.kevinboutwell.thirdstop.core
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Test
 import kotlin.math.pow
 
@@ -73,6 +74,28 @@ class ReciprocityTest {
         val velvia = FilmStocks.byId("fuji-velvia100").reciprocity
         assertFalse(velvia.applies(30.0))
         assertTrue(velvia.applies(120.0))
+    }
+
+    @Test
+    fun `schedules require an identity first anchor`() {
+        try {
+            ReciprocityModel.Schedule(
+                listOf(
+                    ReciprocityModel.Schedule.Point(1.0, 2.0),
+                    ReciprocityModel.Schedule.Point(10.0, 40.0),
+                ),
+            )
+            fail("expected IllegalArgumentException for a non-identity first anchor")
+        } catch (expected: IllegalArgumentException) {
+        }
+    }
+
+    @Test
+    fun `gold 200 is continuous through its first anchor`() {
+        val gold = FilmStocks.byId("kodak-gold200").reciprocity
+        assertEquals(0.4, gold.correct(0.4), 1e-12) // identity below the first anchor
+        assertEquals(2.0, gold.correct(1.0), 1e-9) // datasheet anchor preserved
+        assertTrue(gold.correct(0.99) < 2.0) // no jump approaching it
     }
 
     @Test

@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.stateIn
@@ -74,6 +75,7 @@ class MeterViewModel(
     private val ambient: AmbientLightMeter,
     private val settingsRepo: SettingsRepository,
     private val readingDao: ReadingDao,
+    private val appScope: CoroutineScope,
 ) : ViewModel() {
 
     private data class Inputs(
@@ -216,15 +218,19 @@ class MeterViewModel(
      * explicit unbind.
      */
     fun bindCamera(lifecycleOwner: LifecycleOwner, previewView: PreviewView) {
-        viewModelScope.launch {
-            runCatching { cameraMeter.bind(lifecycleOwner, previewView) }
-        }
+        viewModelScope.launch { cameraMeter.bind(lifecycleOwner, previewView) }
     }
 
     // ---- user actions ----
 
     fun setMode(mode: MeterMode) {
         inputs.update { it.copy(mode = mode, held = null) }
+        when (mode) {
+            // Release the camera (and the OS privacy indicator) while metering
+            // with the light sensor; the viewfinder rebinds on the way back.
+            MeterMode.INCIDENT -> cameraMeter.unbind()
+            MeterMode.REFLECTIVE -> cameraMeter.clearBindError()
+        }
         persistDials()
     }
 
@@ -349,7 +355,8 @@ class MeterViewModel(
             correctedShutterSec = solution?.correctedSeconds,
             note = note?.takeIf { it.isNotBlank() },
         )
-        viewModelScope.launch { readingDao.insert(entity) }
+        // appScope: the save must not die with the screen.
+        appScope.launch { readingDao.insert(entity) }
     }
 
     companion object {
@@ -361,6 +368,7 @@ class MeterViewModel(
                     ambient = app.container.ambientLightMeter,
                     settingsRepo = app.container.settings,
                     readingDao = app.container.readingDao,
+                    appScope = app.container.applicationScope,
                 )
             }
         }

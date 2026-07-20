@@ -15,6 +15,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
@@ -88,13 +89,13 @@ fun ReflectiveViewfinder(
             if (center != null) {
                 drawCircle(
                     color = Color(0xFFFFB74D),
-                    radius = 48f,
+                    radius = 18.dp.toPx(),
                     center = center,
-                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = 3f),
+                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.5.dp.toPx()),
                 )
                 drawCircle(
                     color = Color(0xFFFFB74D),
-                    radius = 4f,
+                    radius = 1.5.dp.toPx(),
                     center = center,
                 )
             }

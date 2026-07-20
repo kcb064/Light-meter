@@ -94,5 +94,37 @@ class StopsTest {
         assertEquals("4s", Stops.formatSeconds(4.0))
         assertEquals("20m 00s", Stops.formatSeconds(1200.0))
         assertEquals("1/8", Stops.formatSeconds(0.125))
+        // Rounding happens before the format is chosen at the 2-minute boundary.
+        assertEquals("2m 00s", Stops.formatSeconds(119.6))
+        assertEquals("119s", Stops.formatSeconds(118.6))
+    }
+
+    @Test
+    fun `degenerate snap inputs clamp instead of throwing`() {
+        // Zero and NaN clamp to the bottom of the table, +Infinity to the top —
+        // these arrive when an absurd EV overflows 2^ev upstream.
+        val zero = Stops.snapShutter(0.0)
+        assertEquals("1/8000", zero.value.nominal)
+        assertTrue(zero.outOfRange)
+
+        val infinite = Stops.snapShutter(Double.POSITIVE_INFINITY)
+        assertEquals("60\"", infinite.value.nominal)
+        assertTrue(infinite.outOfRange)
+
+        val nan = Stops.snapShutter(Double.NaN)
+        assertEquals("1/8000", nan.value.nominal)
+        assertTrue(nan.outOfRange)
+
+        val zeroAperture = Stops.snapAperture(0.0)
+        assertEquals("1.0", zeroAperture.value.nominal)
+        assertTrue(zeroAperture.outOfRange)
+
+        val infiniteAperture = Stops.snapAperture(Double.POSITIVE_INFINITY)
+        assertEquals("64", infiniteAperture.value.nominal)
+        assertTrue(infiniteAperture.outOfRange)
+
+        val nanIso = Stops.snapIso(Double.NaN)
+        assertEquals("25", nanIso.value.nominal)
+        assertTrue(nanIso.outOfRange)
     }
 }

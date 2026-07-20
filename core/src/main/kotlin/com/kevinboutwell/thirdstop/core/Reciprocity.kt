@@ -38,14 +38,16 @@ sealed interface ReciprocityModel {
             require(points.zipWithNext().all { (a, b) -> a.metered < b.metered }) {
                 "schedule anchors must be strictly increasing in metered time"
             }
+            require(points.first().metered == points.first().corrected) {
+                "first anchor must be an identity point (metered == corrected), " +
+                    "otherwise correction jumps discontinuously at ${points.first().metered}s"
+            }
         }
 
         override fun correct(meteredSec: Double): Double {
-            if (meteredSec <= points.first().metered) {
-                // Identity below the first anchor; the first anchor itself should be
-                // an identity point (metered == corrected) for continuity.
-                return if (meteredSec == points.first().metered) points.first().corrected else meteredSec
-            }
+            // Identity at and below the first anchor (init guarantees the anchor
+            // itself is an identity point, so there is no jump).
+            if (meteredSec <= points.first().metered) return meteredSec
             val (a, b) = points.zipWithNext().lastOrNull { (a, b) ->
                 meteredSec > a.metered && meteredSec <= b.metered
             } ?: points.takeLast(2).let { it[0] to it[1] } // beyond last anchor: extrapolate

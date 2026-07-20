@@ -43,12 +43,16 @@ data class CalibrationUiState(
     val samples: List<Double> = emptyList(),
     val applied: Boolean = false,
 ) {
-    /** The trusted EV100 implied by the current source/entry, if parseable. */
+    /** The trusted EV100 implied by the current source/entry, if parseable and sane. */
     val trustedEv100: Double?
         get() = when (source) {
             CalibrationSource.SUNNY_16 -> SUNNY_16_EV100
             else -> when (entryMode) {
+                // toDoubleOrNull accepts "1e999" (Infinity) and "NaN"; without the
+                // range check those flow into a persisted offset that crashes the
+                // meter on every launch.
                 ReferenceEntry.EV_DIRECT -> evText.trim().toDoubleOrNull()
+                    ?.takeIf { it in MIN_TRUSTED_EV..MAX_TRUSTED_EV }
                 ReferenceEntry.CAMERA_SETTINGS -> Exposure.ev100FromExposure(
                     refAperture.exact, refShutter.exact, refIso.exact,
                 )
@@ -66,6 +70,11 @@ data class CalibrationUiState(
 
     companion object {
         const val SUNNY_16_EV100 = 15.0
+
+        // Sanity bounds for a hand-entered EV100: deep starlight to well past
+        // direct specular sun.
+        const val MIN_TRUSTED_EV = -10.0
+        const val MAX_TRUSTED_EV = 25.0
     }
 }
 
@@ -96,9 +105,7 @@ class CalibrationViewModel(
 
     fun bindCamera(lifecycleOwner: LifecycleOwner, previewView: PreviewView) {
         if (!isReflective) return
-        viewModelScope.launch {
-            runCatching { cameraMeter.bind(lifecycleOwner, previewView) }
-        }
+        viewModelScope.launch { cameraMeter.bind(lifecycleOwner, previewView) }
     }
 
     fun setSource(source: CalibrationSource) = inputs.update { it.copy(source = source) }

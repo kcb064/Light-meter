@@ -34,6 +34,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,6 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kevinboutwell.thirdstop.core.Stops
 import com.kevinboutwell.thirdstop.data.CalibrationSource
@@ -65,11 +67,18 @@ fun CalibrationScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
-    val hasCameraPermission = remember {
+    var hasCameraPermission by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) ==
                 PackageManager.PERMISSION_GRANTED,
         )
+    }
+    // Stays fresh if the user grants permission from system settings mid-wizard.
+    LifecycleResumeEffect(Unit) {
+        hasCameraPermission =
+            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) ==
+                PackageManager.PERMISSION_GRANTED
+        onPauseOrDispose { }
     }
 
     Scaffold { padding ->
@@ -89,7 +98,7 @@ fun CalibrationScreen(
             ThisPhoneCard(
                 state = state,
                 isReflective = isReflective,
-                hasCameraPermission = hasCameraPermission.value,
+                hasCameraPermission = hasCameraPermission,
                 viewModel = viewModel,
             )
             Spacer(Modifier.height(16.dp))
@@ -155,11 +164,16 @@ private fun ReferenceCard(state: CalibrationUiState, viewModel: CalibrationViewM
                     modifier = Modifier.padding(horizontal = 16.dp),
                 )
                 Spacer(Modifier.height(12.dp))
+                val invalid = state.evText.isNotBlank() && state.trustedEv100 == null
                 OutlinedTextField(
                     value = state.evText,
                     onValueChange = viewModel::setEvText,
                     label = { Text("Trusted EV (at ISO 100)") },
                     singleLine = true,
+                    isError = invalid,
+                    supportingText = if (invalid) {
+                        { Text("Enter an EV between −10 and +25") }
+                    } else null,
                     modifier = Modifier.padding(horizontal = 16.dp),
                 )
             }

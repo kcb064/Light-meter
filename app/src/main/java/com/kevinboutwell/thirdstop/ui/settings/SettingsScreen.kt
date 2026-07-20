@@ -32,6 +32,7 @@ import com.kevinboutwell.thirdstop.ui.meter.DragRuler
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 @Composable
@@ -88,7 +89,9 @@ fun SettingsScreen(
                     Text(
                         "Reciprocity data is encoded from manufacturer datasheets as " +
                             "approximations. Verify against the current datasheet for " +
-                            "critical work. All readings stay on this device.",
+                            "critical work. The app has no network access; readings " +
+                            "stay on this device, though Android device backups may " +
+                            "include them.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -125,10 +128,12 @@ private fun CalibrationCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.weight(1f))
+                // Show the actual stored offset: a wizard result can exceed the
+                // ±2.0 ruler range, and the ruler alone would misreport it.
                 Text(
-                    "${formatTenths(tenths)} EV",
+                    "${formatOffsetEv(calibration.offsetEv)} EV",
                     style = OffsetValueStyle,
-                    color = if (tenths != 0) MaterialTheme.colorScheme.primary
+                    color = if (abs(calibration.offsetEv) >= 0.05) MaterialTheme.colorScheme.primary
                     else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -177,6 +182,12 @@ private fun provenanceText(calibration: ModeCalibration): String =
 private fun formatTenths(tenths: Int): String = when {
     tenths > 0 -> String.format(Locale.US, "+%.1f", tenths / 10.0)
     tenths < 0 -> String.format(Locale.US, "−%.1f", -tenths / 10.0)
+    else -> "0.0"
+}
+
+private fun formatOffsetEv(value: Double): String = when {
+    value >= 0.05 -> String.format(Locale.US, "+%.1f", value)
+    value <= -0.05 -> String.format(Locale.US, "−%.1f", -value)
     else -> "0.0"
 }
 

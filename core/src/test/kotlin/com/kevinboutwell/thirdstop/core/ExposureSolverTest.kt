@@ -83,4 +83,24 @@ class ExposureSolverTest {
         val s = ExposureSolver.solve(3.0, iso100, 0.0, Priority.APERTURE, aperture("16"), FilmStocks.NONE)
         assertNull(s.correctedSeconds)
     }
+
+    @Test
+    fun `absurd EV values clamp instead of crashing`() {
+        // Above ~EV 1024, 2^evIso overflows to Infinity and the ideal shutter
+        // collapses to zero; the solver must clamp and flag, never throw.
+        val huge = ExposureSolver.solve(10_000.0, iso100, 0.0, Priority.APERTURE, aperture("5.6"))
+        assertTrue(huge.outOfRange)
+        assertEquals("1/8000", huge.shutter.nominal)
+
+        val negative = ExposureSolver.solve(-10_000.0, iso100, 0.0, Priority.APERTURE, aperture("5.6"))
+        assertTrue(negative.outOfRange)
+        assertEquals("60\"", negative.shutter.nominal)
+
+        val nan = ExposureSolver.solve(Double.NaN, iso100, 0.0, Priority.APERTURE, aperture("5.6"))
+        assertTrue(nan.outOfRange)
+
+        val hugeShutterPriority =
+            ExposureSolver.solve(10_000.0, iso100, 0.0, Priority.SHUTTER, shutter("1/125"))
+        assertTrue(hugeShutterPriority.outOfRange)
+    }
 }

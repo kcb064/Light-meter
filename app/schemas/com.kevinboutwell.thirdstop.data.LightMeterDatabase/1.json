@@ -1,0 +1,100 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "c718502795f2b411a83a58ca3d0d6fa1",
+    "entities": [
+      {
+        "tableName": "readings",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `timestampEpochMs` INTEGER NOT NULL, `mode` TEXT NOT NULL, `ev100` REAL NOT NULL, `lux` REAL, `isoNominal` TEXT NOT NULL, `apertureNominal` TEXT NOT NULL, `shutterNominal` TEXT NOT NULL, `ecThirds` INTEGER NOT NULL, `filmId` TEXT, `correctedShutterSec` REAL, `note` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timestampEpochMs",
+            "columnName": "timestampEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mode",
+            "columnName": "mode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ev100",
+            "columnName": "ev100",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lux",
+            "columnName": "lux",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "isoNominal",
+            "columnName": "isoNominal",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "apertureNominal",
+            "columnName": "apertureNominal",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "shutterNominal",
+            "columnName": "shutterNominal",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ecThirds",
+            "columnName": "ecThirds",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "filmId",
+            "columnName": "filmId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "correctedShutterSec",
+            "columnName": "correctedShutterSec",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "note",
+            "columnName": "note",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c718502795f2b411a83a58ca3d0d6fa1')"
+    ]
+  }
+}
