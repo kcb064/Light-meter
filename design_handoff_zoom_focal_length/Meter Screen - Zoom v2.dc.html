@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{margin:0;background:#0E0E10}
+a{color:#FFB74D;text-decoration:none} a:hover{color:#CC8F33}
+</style>
+</helmet>
+<div style="width:390px;height:844px;margin:0 auto;background:#0E0E10;color:#EDEAE4;font-family:Roboto,'Helvetica Neue',Arial,system-ui,sans-serif;font-variant-numeric:tabular-nums;display:flex;flex-direction:column;align-items:center;position:relative;overflow:hidden;-webkit-font-smoothing:antialiased">
+
+  <div data-screen-label="EV status chip" style="margin-top:8px;height:28px;border-radius:999px;background:#17171A;display:flex;align-items:center;gap:6px;padding:0 14px;flex:none">
+    <span style="width:6px;height:6px;border-radius:999px;background:#FFB74D"></span>
+    <span style="font:500 14px/1 Roboto,system-ui,sans-serif;letter-spacing:.5px;color:#FFB74D">EV 11.3 · held</span>
+  </div>
+
+  <div style="height:20px;display:flex;align-items:center;flex:none">
+    <span style="font:500 12px/1 Roboto,system-ui,sans-serif;letter-spacing:.5px;color:#9C988F"></span>
+  </div>
+
+  <div data-screen-label="Solution" style="width:100%;display:flex;flex-direction:column;align-items:center;flex:none;background:radial-gradient(260px 120px at 50% 50%, rgba(255,183,77,.13) 0%, transparent 70%)">
+    <span style="font:300 96px/1.05 Roboto,system-ui,sans-serif;letter-spacing:-2px;white-space:nowrap">1/125</span>
+    <span style="font:500 12px/1.3 Roboto,system-ui,sans-serif;letter-spacing:2px;color:#FFB74D">{{ priorityCaption }}</span>
+  </div>
+
+  <div data-screen-label="Viewfinder" onWheel="{{ onWheel }}" onTouchStart="{{ onTouchStart }}" onTouchMove="{{ onTouchMove }}" onTouchEnd="{{ onTouchEnd }}" style="flex:1;min-height:0;align-self:stretch;margin:8px 16px 0;position:relative;border-radius:16px;overflow:hidden;background:#17171A;touch-action:none;cursor:ns-resize">
+    <div style="position:absolute;inset:0;background:radial-gradient(120% 90% at 70% 20%, #35322c 0%, #23211e 40%, #141412 100%);transition:transform .15s linear;transform: scale({{ zoomScale }});transform-origin:58% 38%"></div>
+    <svg viewBox="0 0 40 40" style="position:absolute;left:58%;top:38%;width:40px;height:40px;transform:translate(-50%,-50%)">
+      <circle cx="20" cy="20" r="16" fill="none" stroke="#FFB74D" stroke-width="1.5"></circle>
+      <circle cx="20" cy="20" r="1.6" fill="#FFB74D"></circle>
+    </svg>
+    <div style="position:absolute;left:12px;top:12px;display:flex;gap:8px">
+      <span style="height:28px;border-radius:999px;background:rgba(58,43,16,.85);display:inline-flex;align-items:center;padding:0 14px;font:500 14px/1 Roboto,system-ui,sans-serif;letter-spacing:.5px;color:#FFB74D">Spot</span>
+      <span style="height:28px;border-radius:999px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.14);display:inline-flex;align-items:center;padding:0 14px;font:500 14px/1 Roboto,system-ui,sans-serif;letter-spacing:.5px;color:rgba(255,255,255,.8)">Average</span>
+    </div>
+    <span style="position:absolute;right:12px;top:12px;height:28px;border-radius:999px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.14);display:inline-flex;align-items:center;padding:0 14px;font:500 14px/1 Roboto,system-ui,sans-serif;letter-spacing:.5px;color:rgba(255,255,255,.8)">Incident</span>
+    <div style="position:absolute;left:0;right:0;bottom:74px;text-align:center;font:500 12px/1 Roboto,system-ui,sans-serif;letter-spacing:.5px;color: {{ zoomLineColor }}">{{ zoomLine }}</div>
+    <div style="position:absolute;left:0;right:0;bottom:38px;display:flex;justify-content:center;gap:8px">
+      <sc-for list="{{ pills }}" as="p" hint-placeholder-count="3">
+        <button onClick="{{ p.pick }}" style="height:28px;min-width:40px;padding:0 12px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;font:500 13px/1 Roboto,system-ui,sans-serif;letter-spacing:.5px;background: {{ p.bg }};border: {{ p.border }};color: {{ p.fg }};transition:background .2s,color .2s">{{ p.label }}</button>
+      </sc-for>
+    </div>
+    <div style="position:absolute;left:0;right:0;bottom:14px;text-align:center;font:500 12px/1 Roboto,system-ui,sans-serif;letter-spacing:.5px;color:rgba(255,255,255,.55)">tap to meter · long-press to hold · pinch to zoom</div>
+  </div>
+
+  <div data-screen-label="Control deck" style="align-self:stretch;margin:12px 16px 0;border-radius:20px;background:#17171A;flex:none;overflow:hidden">
+    <sc-for list="{{ rulers }}" as="r" hint-placeholder-count="3">
+      <div style="height:54px;display:flex;align-items:center;border-bottom:1px solid #2A2A2E">
+        <span style="padding-left:16px;width:78px;flex:none;font:500 12px/1.3 Roboto,system-ui,sans-serif;letter-spacing:1px;color:#9C988F">{{ r.label }}</span>
+        <div style="flex:1;display:flex;justify-content:center;align-items:center;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent 0%,black 18%,black 82%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0%,black 18%,black 82%,transparent 100%)">
+          <sc-for list="{{ r.items }}" as="v" hint-placeholder-count="5">
+            <button onClick="{{ v.pick }}" style="width:72px;flex:none;height:54px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;white-space:nowrap;font: {{ v.font }};color: {{ v.color }}">{{ v.text }}</button>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
+    <div style="display:flex;justify-content:center;gap:8px;padding:12px 0">
+      <button onClick="{{ pickA }}" style="height:30px;padding:0 12px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;white-space:nowrap;font:500 14px/1 Roboto,system-ui,sans-serif;letter-spacing:.5px;background: {{ aBg }};border: {{ aBorder }};color: {{ aFg }}">A priority</button>
+      <button onClick="{{ pickS }}" style="height:30px;padding:0 12px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;white-space:nowrap;font:500 14px/1 Roboto,system-ui,sans-serif;letter-spacing:.5px;background: {{ sBg }};border: {{ sBorder }};color: {{ sFg }}">S priority</button>
+      <button style="height:30px;padding:0 12px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;white-space:nowrap;font:500 14px/1 Roboto,system-ui,sans-serif;letter-spacing:.5px;background:transparent;border:1px solid #3A3A40;color:#9C988F">Film…</button>
+      <button onClick="{{ openSheet }}" style="height:30px;padding:0 12px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;white-space:nowrap;font:500 14px/1 Roboto,system-ui,sans-serif;letter-spacing:.5px;background: {{ lensBg }};border: {{ lensBorder }};color: {{ lensFg }}">{{ lensChipLabel }}</button>
+    </div>
+  </div>
+
+  <div data-screen-label="Action row" style="align-self:stretch;margin:12px 16px;display:flex;gap:12px;align-items:center;flex:none">
+    <button style="width:52px;height:52px;flex:none;border-radius:999px;border:1px solid #3A3A40;background:transparent;color:#EDEAE4;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:currentColor"><path d="M3 13h2v-2H3zm0 4h2v-2H3zm0-8h2V7H3zm4 4h14v-2H7zm0 4h14v-2H7zM7 7v2h14V7z"></path></svg></button>
+    <button style="width:52px;height:52px;flex:none;border-radius:999px;border:1px solid #3A3A40;background:transparent;color:#EDEAE4;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61zM12 15.6A3.61 3.61 0 0 1 8.4 12c0-1.98 1.62-3.6 3.6-3.6s3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"></path></svg></button>
+    <button style="flex:1;height:52px;border-radius:999px;border:1px solid #FFB74D;background:transparent;color:#FFB74D;cursor:pointer;font:500 14px/1 Roboto,system-ui,sans-serif;letter-spacing:.5px">Resume</button>
+    <button style="flex:1;height:52px;border-radius:999px;border:none;background:#FFB74D;color:#201400;cursor:pointer;font:500 14px/1 Roboto,system-ui,sans-serif;letter-spacing:.5px">Save</button>
+  </div>
+
+  <sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeSheet }}" style="position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:10"></div>
+    <div data-screen-label="Lens sheet" style="position:absolute;left:0;right:0;bottom:0;z-index:11;background:#202024;border-radius:28px 28px 0 0;padding-bottom:24px">
+      <div style="display:flex;justify-content:center;padding:12px 0 8px"><span style="width:32px;height:4px;border-radius:999px;background:#3A3A40"></span></div>
+      <div style="padding:4px 24px 8px;font:500 12px/1.3 Roboto,system-ui,sans-serif;letter-spacing:1px;color:#9C988F">MATCH YOUR CAMERA'S LENS</div>
+      <sc-for list="{{ lensOptions }}" as="o" hint-placeholder-count="5">
+        <button onClick="{{ o.pick }}" style="display:flex;align-items:baseline;gap:10px;width:100%;height:48px;padding:0 24px;border:none;background:transparent;cursor:pointer;text-align:left;font:400 16px/1.5 Roboto,system-ui,sans-serif;color: {{ o.fg }}" style-hover="background:rgba(237,234,228,.06)">{{ o.label }}<span style="font:400 14px/1.45 Roboto,system-ui,sans-serif;color:#9C988F">{{ o.note }}</span></button>
+      </sc-for>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 390, &quot;height&quot;: 844}, &quot;baselineMm&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [24, 26, 28], &quot;default&quot;: 24, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;Zoom&quot;}, &quot;showFactor&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Zoom&quot;}}">
+class Component extends DCLogic {
+  state = { mm: 24, lensMm: null, sheetOpen: false, isoIdx: 6, apIdx: 12, ec: 0, priority: 'A' };
+  ISOS = ['100','125','160','200','250','320','400','500','640','800','1000','1250','1600','2000','2500'];
+  APERTURES = ['f/1.4','f/1.6','f/1.8','f/2','f/2.2','f/2.5','f/2.8','f/3.2','f/3.5','f/4','f/4.5','f/5','f/5.6','f/6.3','f/7.1','f/8','f/9','f/10','f/11','f/13','f/14','f/16'];
+  SHUTTERS = ['1/1000','1/800','1/640','1/500','1/400','1/320','1/250','1/200','1/160','1/125','1/100','1/80','1/60','1/50','1/40','1/30'];
+  lensPresets = [{v:null,note:''},{v:24,note:'wide'},{v:28,note:''},{v:35,note:''},{v:50,note:'normal'},{v:85,note:'portrait'},{v:105,note:''},{v:135,note:''}];
+  lenses() {
+    const base = this.props.baselineMm ?? 24;
+    return [
+      { name: 'ultra-wide', mm: Math.round(base * 0.5) },
+      { name: 'wide',       mm: base },
+      { name: 'telephoto',  mm: base * 5 },
+    ];
+  }
+  clamp(mm) { const L = this.lenses(); return Math.min(L[2].mm * 3, Math.max(L[0].mm, mm)); }
+  ruler(label, table, sel, set) {
+    const items = [];
+    for (let i = sel - 3; i <= sel + 3; i++) {
+      if (i < 0 || i >= table.length) { items.push({ text: '', font: '400 14px/1 Roboto,system-ui,sans-serif', color: 'transparent', pick: null }); continue; }
+      const d = Math.abs(i - sel);
+      items.push({
+        text: table[i],
+        font: d === 0 ? '500 24px/1.25 Roboto,system-ui,sans-serif' : '400 ' + (d === 1 ? 15 : 14) + 'px/1 Roboto,system-ui,sans-serif',
+        color: d === 0 ? '#FFB74D' : d === 1 ? '#84817A' : '#4A4A50',
+        pick: ((idx) => () => this.setState(set(idx)))(i)
+      });
+    }
+    return { label, items };
+  }
+  fmtEc(t) {
+    if (t === 0) return '0';
+    const s = t > 0 ? '+' : '−', a = Math.abs(t), w = Math.floor(a / 3), f = ['', '⅓', '⅔'][a % 3];
+    return s + (w > 0 ? w : '') + f;
+  }
+  renderVals() {
+    const showX = this.props.showFactor ?? true;
+    const base = this.props.baselineMm ?? 24;
+    const L = this.lenses();
+    const mm = this.state.mm, mmR = Math.round(mm);
+    let ai = 0; L.forEach((l, k) => { if (mm >= l.mm - 0.5) ai = k; });
+    const factor = mm / base;
+    const fLabel = (factor < 1 ? factor.toFixed(1) : factor < 10 ? (Math.round(factor * 10) / 10).toString().replace(/\.0$/, '') : Math.round(factor)) + '×';
+    const digital = mm > L[ai].mm + 0.5;
+    const pills = L.map((l, i) => {
+      const sel = i === ai;
+      return {
+        label: sel ? mmR + 'mm' + (showX ? ' · ' + fLabel : '') : String(l.mm),
+        bg: sel ? 'rgba(58,43,16,.85)' : 'rgba(0,0,0,.5)',
+        border: sel ? 'none' : '1px solid rgba(255,255,255,.14)',
+        fg: sel ? '#FFB74D' : 'rgba(255,255,255,.8)',
+        pick: () => this.setState({ mm: l.mm })
+      };
+    });
+    let zoomLine = '≈ ' + mmR + 'mm full frame · ' + L[ai].name + (digital ? ' + digital crop' : ''), zoomLineColor = '#9C988F';
+    if (this.state.lensMm) {
+      const t = this.state.lensMm, d = mmR - t;
+      zoomLineColor = '#FFB74D';
+      zoomLine = d === 0 ? 'matching your ' + t + 'mm lens'
+        : Math.abs(d) <= Math.max(3, t * .08) ? '≈ your ' + t + 'mm lens (' + (d > 0 ? 'slightly tighter' : 'slightly wider') + ')'
+        : 'your ' + t + 'mm lens is ' + (d > 0 ? 'wider' : 'tighter') + ' than this frame';
+    }
+    const st = this.state;
+    const midRuler = st.priority === 'A'
+      ? this.ruler('APERTURE', this.APERTURES, st.apIdx, i => ({ apIdx: i }))
+      : this.ruler('SHUTTER', this.SHUTTERS, st.shIdx ?? 9, i => ({ shIdx: i }));
+    const ecTable = []; for (let t = -9; t <= 9; t++) ecTable.push(this.fmtEc(t));
+    const selChip = { bg: '#3A2B10', border: 'none', fg: '#FFB74D' }, offChip = { bg: 'transparent', border: '1px solid #3A3A40', fg: '#9C988F' };
+    const a = st.priority === 'A' ? selChip : offChip, s = st.priority === 'S' ? selChip : offChip;
+    const lens = st.lensMm ? selChip : offChip;
+    return {
+      priorityCaption: st.priority === 'A' ? 'SHUTTER · A PRIORITY' : 'APERTURE · S PRIORITY',
+      zoomScale: mm / base + 0.5, zoomLine, zoomLineColor, pills,
+      rulers: [
+        this.ruler('ISO', this.ISOS, st.isoIdx, i => ({ isoIdx: i })),
+        midRuler,
+        this.ruler('EC', ecTable, st.ec + 9, i => ({ ec: i - 9 }))
+      ],
+      pickA: () => this.setState({ priority: 'A' }), pickS: () => this.setState({ priority: 'S' }),
+      aBg: a.bg, aBorder: a.border, aFg: a.fg, sBg: s.bg, sBorder: s.border, sFg: s.fg,
+      lensBg: lens.bg, lensBorder: lens.border, lensFg: lens.fg,
+      lensChipLabel: st.lensMm ? st.lensMm + 'mm' : 'Lens…',
+      sheetOpen: st.sheetOpen,
+      openSheet: () => this.setState({ sheetOpen: true }),
+      closeSheet: () => this.setState({ sheetOpen: false }),
+      lensOptions: this.lensPresets.map(o => ({
+        label: o.v ? o.v + 'mm' : 'Off',
+        note: o.note,
+        fg: o.v === st.lensMm ? '#FFB74D' : '#EDEAE4',
+        pick: () => this.setState({ lensMm: o.v, sheetOpen: false, mm: o.v ? this.clamp(o.v) : st.mm })
+      })),
+      onWheel: (e) => { e.preventDefault(); this.setState(s2 => ({ mm: this.clamp(s2.mm * Math.exp(-e.deltaY * 0.0018)) })); },
+      onTouchStart: (e) => { if (e.touches.length === 2) this._pinch = { d: this.dist(e), mm: this.state.mm }; },
+      onTouchMove: (e) => { if (e.touches.length === 2 && this._pinch) { e.preventDefault(); this.setState({ mm: this.clamp(this._pinch.mm * this.dist(e) / this._pinch.d) }); } },
+      onTouchEnd: () => { this._pinch = null; }
+    };
+  }
+  dist(e) { const a = e.touches[0], b = e.touches[1]; return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); }
+}
+</script>
+</body>
+</html>

@@ -17,5 +17,8 @@ keystore.properties
 *.keystore
 *.jks
 
+# Claude Code local settings
+.claude/settings.local.json
+
 # Misc
 .DS_Store
