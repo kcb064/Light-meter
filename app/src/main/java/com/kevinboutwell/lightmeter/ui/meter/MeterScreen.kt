@@ -14,6 +14,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -68,11 +69,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.kevinboutwell.lightmeter.camera.ZoomCaps
 import com.kevinboutwell.lightmeter.core.FilmStocks
 import com.kevinboutwell.lightmeter.core.Priority
 import com.kevinboutwell.lightmeter.core.Stops
 import java.util.Locale
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
+
+/** Common real-lens focal lengths for the "match your camera's lens" sheet. */
+private val LENS_PRESETS: List<Pair<Int?, String>> = listOf(
+    null to "",
+    24 to "wide",
+    28 to "",
+    35 to "",
+    50 to "normal",
+    85 to "portrait",
+    105 to "",
+    135 to "",
+)
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -102,6 +119,7 @@ fun MeterScreen(
     }
 
     var showFilmSheet by remember { mutableStateOf(false) }
+    var showLensSheet by remember { mutableStateOf(false) }
     var showSaveDialog by remember { mutableStateOf(false) }
 
     Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) { padding ->
@@ -142,6 +160,7 @@ fun MeterScreen(
                 state = state,
                 viewModel = viewModel,
                 onOpenFilmSheet = { showFilmSheet = true },
+                onOpenLensSheet = { showLensSheet = true },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
@@ -200,6 +219,60 @@ fun MeterScreen(
                                     it,
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (showLensSheet) {
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ModalBottomSheet(
+            onDismissRequest = { showLensSheet = false },
+            sheetState = sheetState,
+        ) {
+            Column(modifier = Modifier.padding(bottom = 24.dp)) {
+                Text(
+                    "MATCH YOUR CAMERA'S LENS",
+                    style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 1.sp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+                )
+                LENS_PRESETS.forEach { (mm, note) ->
+                    TextButton(
+                        onClick = {
+                            viewModel.setLensPreset(mm)
+                            showLensSheet = false
+                        },
+                        shape = RoundedCornerShape(0.dp),
+                        contentPadding = PaddingValues(horizontal = 24.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        ) {
+                            Text(
+                                mm?.let { "${it}mm" } ?: "Off",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = if (mm == state.lensPresetMm) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface
+                                },
+                                modifier = Modifier.alignByBaseline(),
+                            )
+                            if (note.isNotEmpty()) {
+                                Text(
+                                    note,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.alignByBaseline(),
                                 )
                             }
                         }
@@ -413,6 +486,7 @@ private fun ViewfinderCard(
                 onBind = viewModel::bindCamera,
                 onMeterAt = viewModel::meterAt,
                 onLongPress = onLongPressHold,
+                onPinch = viewModel::pinchZoomBy,
                 modifier = Modifier.fillMaxSize(),
             )
         }
@@ -446,10 +520,15 @@ private fun ViewfinderCard(
                 .align(Alignment.TopEnd)
                 .padding(12.dp),
         )
+        val zoomCaps = state.zoomCaps
+        val zoomMm = state.zoomMm
+        val zoomVisible = state.mode == MeterMode.REFLECTIVE && cameraReady &&
+            zoomCaps != null && zoomMm != null
         val hint = when {
             state.mode == MeterMode.INCIDENT && state.hasLightSensor -> "long-press to hold"
             state.mode == MeterMode.REFLECTIVE && cameraReady ->
-                "tap to meter · long-press to hold"
+                if (zoomVisible) "tap to meter · long-press to hold · pinch to zoom"
+                else "tap to meter · long-press to hold"
             else -> null
         }
         if (hint != null) {
@@ -462,7 +541,93 @@ private fun ViewfinderCard(
                 color = Color.White.copy(alpha = 0.55f),
             )
         }
+        if (zoomVisible && zoomCaps != null && zoomMm != null) {
+            ZoomStatusLine(
+                caps = zoomCaps,
+                mm = zoomMm,
+                presetMm = state.lensPresetMm,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 74.dp),
+            )
+            ZoomPillRow(
+                caps = zoomCaps,
+                mm = zoomMm,
+                onSelect = viewModel::setZoomMm,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 38.dp),
+            )
+        }
     }
+}
+
+// ---- zoom overlay ----
+
+/** Index of the lens the current framing rides on (largest lens ≤ mm). */
+private fun activeLensIndex(caps: ZoomCaps, mm: Float): Int {
+    var index = 0
+    caps.lenses.forEachIndexed { i, lens -> if (mm >= lens.eqMm - 0.5f) index = i }
+    return index
+}
+
+/** "0.5×", "3×", "7.5×", "12×" — one decimal below 10×, ".0" stripped. */
+private fun zoomFactorLabel(factor: Float): String = when {
+    factor >= 10f -> "${factor.roundToInt()}×"
+    else -> String.format(Locale.US, "%.1f", factor).removeSuffix(".0") + "×"
+}
+
+@Composable
+private fun ZoomPillRow(
+    caps: ZoomCaps,
+    mm: Float,
+    onSelect: (Float) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val activeIndex = activeLensIndex(caps, mm)
+    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        caps.lenses.forEachIndexed { i, lens ->
+            val selected = i == activeIndex
+            GlassChip(
+                text = if (selected) {
+                    "${mm.roundToInt()}mm · ${zoomFactorLabel(mm / caps.mainEqMm)}"
+                } else {
+                    lens.eqMm.roundToInt().toString()
+                },
+                selected = selected,
+                onClick = { onSelect(lens.eqMm) },
+            )
+        }
+    }
+}
+
+/** Fixed overlay slot 74dp above the card bottom — appearing text never shifts anything. */
+@Composable
+private fun ZoomStatusLine(
+    caps: ZoomCaps,
+    mm: Float,
+    presetMm: Int?,
+    modifier: Modifier = Modifier,
+) {
+    val mmRounded = mm.roundToInt()
+    val activeLens = caps.lenses[activeLensIndex(caps, mm)]
+    val (text, color) = if (presetMm == null) {
+        val digitalCrop = mm > activeLens.eqMm + 0.5f
+        val suffix = if (digitalCrop) " + digital crop" else ""
+        "≈ ${mmRounded}mm full frame · ${activeLens.name}$suffix" to
+            MaterialTheme.colorScheme.onSurfaceVariant
+    } else {
+        val delta = mmRounded - presetMm
+        val nearly = abs(delta) <= max(3f, presetMm * 0.08f)
+        when {
+            delta == 0 -> "matching your ${presetMm}mm lens"
+            nearly -> "≈ your ${presetMm}mm lens " +
+                if (delta > 0) "(slightly tighter)" else "(slightly wider)"
+            else -> "your ${presetMm}mm lens is " +
+                (if (delta > 0) "wider" else "tighter") + " than this frame"
+        } to MaterialTheme.colorScheme.primary
+    }
+    Text(text, style = MaterialTheme.typography.labelMedium, color = color, modifier = modifier)
 }
 
 @Composable
@@ -543,6 +708,7 @@ private fun ControlDeck(
     state: MeterUiState,
     viewModel: MeterViewModel,
     onOpenFilmSheet: () -> Unit,
+    onOpenLensSheet: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val isoLabels = remember { Stops.ISOS.map { it.nominal } }
@@ -614,6 +780,13 @@ private fun ControlDeck(
                     selected = state.film.id != FilmStocks.NONE.id,
                     onClick = onOpenFilmSheet,
                 )
+                if (state.mode == MeterMode.REFLECTIVE) {
+                    DeckChip(
+                        text = state.lensPresetMm?.let { "${it}mm" } ?: "Lens…",
+                        selected = state.lensPresetMm != null,
+                        onClick = onOpenLensSheet,
+                    )
+                }
             }
         }
     }

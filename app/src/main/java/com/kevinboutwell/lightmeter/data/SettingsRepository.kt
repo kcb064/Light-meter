@@ -33,6 +33,10 @@ data class DialState(
     val filmId: String = "none",
     val mode: String = "REFLECTIVE",
     val spot: Boolean = true,
+    /** 35mm-equivalent zoom, null = camera default (main lens, 1x). */
+    val zoomMm: Double? = null,
+    /** Focal length of the user's real lens to match, null = off. */
+    val lensPresetMm: Int? = null,
 )
 
 data class AppSettings(
@@ -58,6 +62,8 @@ class SettingsRepository(private val context: Context) {
         val filmId = stringPreferencesKey("last_film_id")
         val mode = stringPreferencesKey("last_mode")
         val spot = booleanPreferencesKey("last_spot")
+        val zoomMm = doublePreferencesKey("last_zoom_mm")
+        val lensPresetMm = intPreferencesKey("last_lens_preset_mm")
     }
 
     val settings: Flow<AppSettings> = context.settingsStore.data.map { p ->
@@ -81,6 +87,8 @@ class SettingsRepository(private val context: Context) {
                 filmId = p[Keys.filmId] ?: "none",
                 mode = p[Keys.mode] ?: "REFLECTIVE",
                 spot = p[Keys.spot] ?: true,
+                zoomMm = p[Keys.zoomMm],
+                lensPresetMm = p[Keys.lensPresetMm],
             ),
         )
     }
@@ -95,6 +103,8 @@ class SettingsRepository(private val context: Context) {
             p[Keys.filmId] = dials.filmId
             p[Keys.mode] = dials.mode
             p[Keys.spot] = dials.spot
+            dials.zoomMm?.let { p[Keys.zoomMm] = it } ?: p.remove(Keys.zoomMm)
+            dials.lensPresetMm?.let { p[Keys.lensPresetMm] = it } ?: p.remove(Keys.lensPresetMm)
         }
     }
 

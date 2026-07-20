@@ -17,6 +17,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.lifecycle.compose.LocalLifecycleOwner
 
 /**
@@ -31,6 +32,8 @@ fun ReflectiveViewfinder(
     onMeterAt: (androidx.camera.core.MeteringPoint) -> Unit,
     modifier: Modifier = Modifier,
     onLongPress: () -> Unit = {},
+    /** Incremental pinch scale (>1 zooms in) — see [detectTransformGestures]. */
+    onPinch: (Float) -> Unit = {},
     fillBox: Boolean = false,
 ) {
     val context = LocalContext.current
@@ -73,6 +76,11 @@ fun ReflectiveViewfinder(
                             }
                         },
                     )
+                }
+                .pointerInput(Unit) {
+                    detectTransformGestures { _, _, zoomChange, _ ->
+                        if (zoomChange != 1f) onPinch(zoomChange)
+                    }
                 },
         )
         Canvas(modifier = Modifier.fillMaxSize()) {

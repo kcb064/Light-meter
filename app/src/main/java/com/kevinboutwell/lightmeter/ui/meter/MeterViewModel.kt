@@ -11,6 +11,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.kevinboutwell.lightmeter.LightMeterApp
 import com.kevinboutwell.lightmeter.camera.AeReading
 import com.kevinboutwell.lightmeter.camera.CameraMeter
+import com.kevinboutwell.lightmeter.camera.ZoomCaps
 import com.kevinboutwell.lightmeter.core.Exposure
 import com.kevinboutwell.lightmeter.core.ExposureSolver
 import com.kevinboutwell.lightmeter.core.FilmStock
@@ -31,6 +32,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -59,6 +62,11 @@ data class MeterUiState(
     val cameraUnsupportedReason: String? = null,
     val apertureIsFallback: Boolean = false,
     val notConverged: Boolean = false,
+    /** Null until the camera reports usable focal-length data. */
+    val zoomCaps: ZoomCaps? = null,
+    /** Current 35mm-equivalent framing, clamped; null while [zoomCaps] is null. */
+    val zoomMm: Float? = null,
+    val lensPresetMm: Int? = null,
 )
 
 class MeterViewModel(
@@ -78,6 +86,9 @@ class MeterViewModel(
         val shutter: StopValue = Stops.DEFAULT_SHUTTER,
         val ecThirds: Int = 0,
         val film: FilmStock = FilmStocks.NONE,
+        /** Requested 35mm-equivalent zoom; null = camera default (main lens). */
+        val zoomMm: Float? = null,
+        val lensPresetMm: Int? = null,
     )
 
     private data class CameraState(
@@ -102,8 +113,8 @@ class MeterViewModel(
         ambient.lux.map { it as Double? }.onStart { emit(null) }
 
     val uiState: StateFlow<MeterUiState> = combine(
-        inputs, cameraState, ambientLux, settingsRepo.settings,
-    ) { input, camera, lux, settings ->
+        inputs, cameraState, ambientLux, settingsRepo.settings, cameraMeter.zoomCaps,
+    ) { input, camera, lux, settings, zoomCaps ->
         val rawEv100: Double?
         val calibratedEv100: Double?
         val shownLux: Double?
@@ -147,6 +158,11 @@ class MeterViewModel(
                 camera.reading?.apertureIsFallback == true,
             notConverged = input.mode == MeterMode.REFLECTIVE && input.held == null &&
                 camera.reading?.converged == false,
+            zoomCaps = zoomCaps,
+            zoomMm = zoomCaps?.let {
+                (input.zoomMm ?: it.mainEqMm).coerceIn(it.minMm, it.maxMm)
+            },
+            lensPresetMm = input.lensPresetMm,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MeterUiState())
 
@@ -163,8 +179,12 @@ class MeterViewModel(
                     shutter = Stops.SHUTTERS.firstOrNull { it.nominal == dials.shutterNominal } ?: current.shutter,
                     ecThirds = dials.ecThirds.coerceIn(-9, 9),
                     film = FilmStocks.byId(dials.filmId),
+                    zoomMm = dials.zoomMm?.toFloat(),
+                    lensPresetMm = dials.lensPresetMm,
                 )
             }
+            // CameraMeter remembers the framing and applies it on (re)bind.
+            dials.zoomMm?.let { cameraMeter.setZoomMm(it.toFloat()) }
         }
     }
 
@@ -181,6 +201,8 @@ class MeterViewModel(
                     filmId = i.film.id,
                     mode = i.mode.name,
                     spot = i.spot,
+                    zoomMm = i.zoomMm?.toDouble(),
+                    lensPresetMm = i.lensPresetMm,
                 ),
             )
         }
@@ -248,6 +270,43 @@ class MeterViewModel(
     fun setEcThirds(thirds: Int) { inputs.update { it.copy(ecThirds = thirds.coerceIn(-9, 9)) }; persistDials() }
 
     fun setFilm(film: FilmStock) { inputs.update { it.copy(film = film) }; persistDials() }
+
+    // ---- zoom ----
+
+    private var zoomPersistJob: Job? = null
+
+    /** Jump exactly to a focal length (lens pill tap, preset selection). */
+    fun setZoomMm(mm: Float) = applyZoom(mm, debouncePersist = false)
+
+    /** Incremental pinch update: multiply the current framing by [factor]. */
+    fun pinchZoomBy(factor: Float) {
+        val caps = cameraMeter.zoomCaps.value ?: return
+        val current = (inputs.value.zoomMm ?: caps.mainEqMm).coerceIn(caps.minMm, caps.maxMm)
+        applyZoom(current * factor, debouncePersist = true)
+    }
+
+    fun setLensPreset(mm: Int?) {
+        inputs.update { it.copy(lensPresetMm = mm) }
+        persistDials()
+        if (mm != null) applyZoom(mm.toFloat(), debouncePersist = false)
+    }
+
+    private fun applyZoom(mm: Float, debouncePersist: Boolean) {
+        val caps = cameraMeter.zoomCaps.value ?: return
+        val clamped = mm.coerceIn(caps.minMm, caps.maxMm)
+        inputs.update { it.copy(zoomMm = clamped) }
+        cameraMeter.setZoomMm(clamped)
+        if (debouncePersist) {
+            // A pinch emits per-frame updates; don't hit DataStore for each.
+            zoomPersistJob?.cancel()
+            zoomPersistJob = viewModelScope.launch {
+                delay(400)
+                persistDials()
+            }
+        } else {
+            persistDials()
+        }
+    }
 
     /**
      * Re-applies a logged reading's setup to the meter: ISO, EC, film, and
