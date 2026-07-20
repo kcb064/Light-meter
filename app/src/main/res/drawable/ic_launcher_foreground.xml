@@ -4,20 +4,24 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Meter dial ring -->
+    <!-- Viewfinder corner brackets -->
     <path
         android:fillColor="#00000000"
         android:strokeColor="#FFB74D"
-        android:strokeWidth="4"
-        android:pathData="M54,54 m-24,0 a24,24 0 1,1 48,0 a24,24 0 1,1 -48,0" />
-    <!-- Needle pointing to upper right -->
-    <path
-        android:strokeColor="#FFB74D"
-        android:strokeWidth="4"
+        android:strokeWidth="3.5"
         android:strokeLineCap="round"
-        android:pathData="M54,54 L69,39" />
-    <!-- Center pivot -->
+        android:pathData="M43.9,32.4 L35.3,32.4 Q32.4,32.4 32.4,35.3 L32.4,43.9
+            M64.1,32.4 L72.7,32.4 Q75.6,32.4 75.6,35.3 L75.6,43.9
+            M75.6,64.1 L75.6,72.7 Q75.6,75.6 72.7,75.6 L64.1,75.6
+            M43.9,75.6 L35.3,75.6 Q32.4,75.6 32.4,72.7 L32.4,64.1" />
+    <!-- Spot circle -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFB74D"
+        android:strokeWidth="3.5"
+        android:pathData="M54,54 m-10,0 a10,10 0 1,1 20,0 a10,10 0 1,1 -20,0" />
+    <!-- Center dot -->
     <path
         android:fillColor="#FFB74D"
-        android:pathData="M54,54 m-4,0 a4,4 0 1,1 8,0 a4,4 0 1,1 -8,0" />
+        android:pathData="M54,54 m-3,0 a3,3 0 1,1 6,0 a3,3 0 1,1 -6,0" />
 </vector>
