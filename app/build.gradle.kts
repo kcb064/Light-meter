@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "com.kevinboutwell.lightmeter"
+    namespace = "com.kevinboutwell.thirdstop"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.kevinboutwell.lightmeter"
+        applicationId = "com.kevinboutwell.thirdstop"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

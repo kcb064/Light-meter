@@ -26,7 +26,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "lightmeter"
+rootProject.name = "thirdstop"
 
 include(":core")
 // :app needs the Android SDK and Google's Maven repository. Setting

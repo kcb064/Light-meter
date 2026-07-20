@@ -1,4 +1,6 @@
-# Light Meter
+# Third Stop
+
+*Play Store listing title: "Third Stop: Film Light Meter"*
 
 An Android light meter for film photography — a handheld-meter replacement for
 cameras with no working meter.
