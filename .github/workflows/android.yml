@@ -23,8 +23,14 @@ jobs:
       - name: Unit tests and debug build
         run: ./gradlew --no-daemon testDebugUnitTest :core:test assembleDebug
 
-      - name: Release build (unsigned, catches R8/ProGuard breakage)
-        run: ./gradlew --no-daemon assembleRelease
+      - name: Release build + Play bundle (unsigned, catches R8/ProGuard breakage)
+        run: ./gradlew --no-daemon assembleRelease bundleRelease
+
+      - name: Upload release bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: thirdstop-release-aab
+          path: app/build/outputs/bundle/release/*.aab
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4

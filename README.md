@@ -31,6 +31,21 @@ the Android SDK: set `LIGHTMETER_CORE_ONLY=1` to exclude the `:app` module.
 Release signing reads `keystore.properties` (see `keystore.properties.example`)
 or `KEYSTORE_*` environment variables; neither is committed.
 
+## Releasing to Google Play
+
+```sh
+./gradlew bundleRelease        # app/build/outputs/bundle/release/app-release.aab
+```
+
+Play takes the `.aab`, not an APK. Without signing configured the bundle still
+builds (useful in CI to catch R8 breakage) but is unsigned and cannot be
+uploaded — create `keystore.properties` first, and keep the keystore backed up,
+since losing it means losing the ability to ship updates.
+
+Store listing assets, listing copy and the Play Console answers live in
+[`store/`](store/README.md). The privacy policy Play requires is
+[`docs/index.html`](docs/index.html), served via GitHub Pages.
+
 ## Accuracy notes
 
 Phone auto-exposure systems vary by ±0.3–0.7 EV between devices, and ambient
